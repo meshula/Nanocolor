@@ -43,14 +43,21 @@ extern "C" {
 #define NcMatchLinearColorSpace      NCCONCAT(NCNAMESPACE, MatchLinearColorSpace)
 
 // returns an XYZ coordinate for the blackbody emission spectrum
-// for values between 1667 and 25000K
+// for values between 1667 and 25000K. A common handling of temperatures 
+// above a certain point is to crossfade to CIE daylight illumination, 
+// but the crossfade is not sandardized, and so is left as an exercise to the reader.
 NCAPI NcCIEXYZ NcKelvinToXYZ(float temperature, float luminosity);
 
 // return a pointer to 24 color values in ap0 corresponding to
 // the 24 color chips in ISO standard chart 17321
+// These AP0 values have been obtained from specification document.
 NCAPI NcRGB* NcISO17321_ColorChips_AP0(void);
 NCAPI const char** NcISO17321_ColorChips_Names(void);
+
+// These values were obtained from https://en.wikipedia.org/wiki/ColorChecker
 NCAPI NcRGB* NcISO17321_ColorChips_SRGB(void);
+
+// These values were obtained from https://en.wikipedia.org/wiki/ColorChecker
 NCAPI NcCIEXYZ* NcISO17321_ColorChips_xyY(void);
 
 // given a CIEXYZ 1931 color coordinate, project it to the
