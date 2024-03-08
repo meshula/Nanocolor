@@ -53,6 +53,52 @@ multiplication, and an output transform may be re-applied. This
 allows Nanocolor to transform any color space with this invertible
 property to any other with the invertible property.
 
+_____
+
+## Definitions
+
+Nomenclature shall be as per ISO 22028-1 terminology, and will occassionally spell colour with a u per common usage.
+
+### Colour space
+
+A geometric representation of colors in a metrical space.
+
+### Colorimetric colour space
+
+A colour space having an exact and simple relationship to CIE colorimetric values.
+
+### Adopted white
+
+A “spectral radiance distribution” that converts to perfectly achromatic colour signals that have a value of unity “(i.e. colour signals that are considered to correspond to a perfect white diffuser)”
+
+### Additive RGB colour space
+
+colorimetric colour space with three primary chromaticities, adopted white chromaticity, transfer function
+
+### Colour space encoding
+
+“digital encoding of a colour space, including ... digital encoding method, and ... value range”
+
+### Colour image encoding
+
+Colour space encoding plus context, including image state, intended viewing environment, and for print, reference medium
+
+_____
+
+## Scope
+
+Colour space encoding is in scope.
+
+Colour image encoding is out of scope.
+
+Camera vendor specific colour spaces are out of scope.
+
+Colour spaces relative to a particular encoded white (cf. LAB, LUV, etc but also IPT and other spaces optimized for gamut mapping) are out of scope.
+
+Hybrid Log Gamma encoding is to be discussed as to whether it is in or out of scope.
+
+_____
+
 ## Nanocolor API
 
 For a description of data types, please refer to Nanocolor.h
