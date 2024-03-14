@@ -57,7 +57,7 @@ _____
 
 ## Definitions
 
-Nomenclature shall be as per ISO 22028-1 terminology, and will occassionally spell colour with a u per common usage.
+Nomenclature shall be as per ISO 22028-1 terminology, and will occasionally spell colour with a u per common usage.
 
 ### Colour space
 
