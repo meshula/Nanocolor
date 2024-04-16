@@ -2,6 +2,14 @@
 // Copyright 2024 Pixar
 //
 // Licensed under the Apache License, Version 2.0 (the "Apache License")
+// with the following modification; you may not use this file except in
+// compliance with the Apache License and the following modification to it:
+// Section 6. Trademarks. is deleted and replaced with:
+//
+// 6. Trademarks. This License does not grant permission to use the trade
+//    names, trademarks, service marks, or product names of the Licensor
+//    and its affiliates, except as required to comply with Section 4(c) of
+//    the License and to reproduce the content of the NOTICE file.
 //
 // You may obtain a copy of the Apache License at
 //
@@ -30,11 +38,81 @@
 
 extern "C" {
 
+struct NcColorSpace {
+    NcColorSpaceDescriptor desc;
+    float K0, phi;
+    NcM33f rgbToXYZ;
+};
+
+const char* Nc_acescg = "acescg";
+const char* Nc_adobergb = "adobergb";
+const char* Nc_g18_ap1 = "g18_ap1";
+const char* Nc_g18_rec709 = "g18_rec709";
+const char* Nc_g22_ap1 = "g22_ap1";
+const char* Nc_g22_rec709 = "g22_rec709";
+const char* Nc_identity = "identity";
+const char* Nc_lin_adobergb = "lin_adobergb";
+const char* Nc_lin_ap0 = "lin_ap0";
+const char* Nc_lin_ap1 = "lin_ap1";
+const char* Nc_lin_displayp3 = "lin_displayp3";
+const char* Nc_lin_rec709 = "lin_rec709";
+const char* Nc_lin_rec2020 = "lin_rec2020";
+const char* Nc_lin_srgb = "lin_srgb";
+const char* Nc_raw = "raw";
+const char* Nc_srgb_displayp3 = "srgb_displayp3";
+const char* Nc_sRGB = "sRGB";
+const char* Nc_srgb_texture = "srgb_texture";
+
+NCAPI const char*  NcGetDescription(const NcColorSpace* cs) {
+    if (!cs)
+        return nullptr;
+
+    if (!strcmp(cs->desc.name, Nc_acescg))
+        return "Academy Color Encoding System (ACEScg), a color space designed for computer graphics.";
+    if (!strcmp(cs->desc.name, Nc_adobergb))
+        return "Adobe RGB (1998), a color space developed by Adobe Systems.";
+    if (!strcmp(cs->desc.name, Nc_g18_ap1))
+        return "Gamma 1.8, primaries from ACES, white point from ACES.";
+    if (!strcmp(cs->desc.name, Nc_g18_rec709))
+        return "Gamma 1.8, primaries from Rec. 709, white point from D65.";
+    if (!strcmp(cs->desc.name, Nc_g22_ap1))
+        return "Gamma 2.2, primaries from ACES, white point from ACES.";
+    if (!strcmp(cs->desc.name, Nc_g22_rec709))
+        return "Gamma 2.2, primaries from Rec. 709, white point from D65.";
+    if (!strcmp(cs->desc.name, Nc_identity))
+        return "Identity color space, no conversion.";
+    if (!strcmp(cs->desc.name, Nc_lin_adobergb))
+        return "Linear Adobe RGB (1998), a color space developed by Adobe Systems.";
+    if (!strcmp(cs->desc.name, Nc_lin_ap0))
+        return "Linear transfer, AP1 primaries, white point from ACES.";
+    if (!strcmp(cs->desc.name, Nc_lin_ap1))
+        return "Linear transfer, AP0 primaries, white point from ACES.";
+    if (!strcmp(cs->desc.name, Nc_lin_displayp3))
+        return "Linear Display P3, a color space adapted to the Display P3 primaries.";
+    if (!strcmp(cs->desc.name, Nc_lin_rec709))
+        return "Linear Rec. 709, a color space adapted to the Rec. 709 primaries.";
+    if (!strcmp(cs->desc.name, Nc_lin_rec2020))
+        return "Linear Rec. 2020, a color space adapted to the Rec. 2020 primaries.";
+    if (!strcmp(cs->desc.name, Nc_lin_srgb))
+        return "Linear sRGB, a color space adapted to the sRGB primaries.";
+    if (!strcmp(cs->desc.name, Nc_raw))
+        return "Raw color space, no conversion.";
+    if (!strcmp(cs->desc.name, Nc_srgb_displayp3))
+        return "sRGB Display P3, a color space adapted to the Display P3 primaries.";
+    if (!strcmp(cs->desc.name, Nc_sRGB))
+        return "sRGB, a display color space developed by HP and Microsoft.";
+    if (!strcmp(cs->desc.name, Nc_srgb_texture))
+        return "sRGB Texture, a color space adapted to the sRGB primaries.";
+    return cs->desc.name;
+}
+
+void NcInitColorSpace(NcColorSpace* cs);
+
 // White point chromaticities.
 static const NcXYChromaticity _WpD65 = { 0.3127, 0.3290 };
 static const NcXYChromaticity _WpACES = { 0.32168, 0.33767 };
 
-static const NcColorSpace _colorSpaces[] = {
+static NcColorSpace _colorSpaces[] = {
     {
         "acescg",                       // same as lin_ap0
         { 0.713, 0.293 },
@@ -43,8 +121,8 @@ static const NcColorSpace _colorSpaces[] = {
         _WpACES,
         1.0,
         0.0,
-        {{ 0, 0, 0, 0 },                // transfer - zero must be computed
-         { 0,0,0, 0,0,0, 0,0,0 }}       // transform - zero must be computed
+        0, 0,
+        { 0,0,0, 0,0,0, 0,0,0 }       // transform - zero must be computed
     },
     {
         "adobergb",
@@ -54,8 +132,8 @@ static const NcColorSpace _colorSpaces[] = {
         _WpD65,
         563.0/256.0,
         0.0,
-        {{ 0, 0, 0, 0 },                // transfer - zero must be computed
-         { 0,0,0, 0,0,0, 0,0,0 }}       // transform - zero must be computed
+        0, 0,
+        { 0,0,0, 0,0,0, 0,0,0 }       // transform - zero must be computed
     },
     {
         "g18_ap1",
@@ -65,8 +143,8 @@ static const NcColorSpace _colorSpaces[] = {
         _WpACES,
         1.8,
         0.0,
-        {{ 0, 0, 0, 0 },                // transfer - zero must be computed
-         { 0,0,0, 0,0,0, 0,0,0 }}       // transform - zero must be computed
+        0, 0,
+        { 0,0,0, 0,0,0, 0,0,0 }       // transform - zero must be computed
     },
     {
         "g22_ap1",
@@ -76,8 +154,8 @@ static const NcColorSpace _colorSpaces[] = {
         _WpACES,
         2.2,
         0.0,
-        {{ 0, 0, 0, 0 },                // transfer - zero must be computed
-         { 0,0,0, 0,0,0, 0,0,0 }}       // transform - zero must be computed
+        0, 0,
+        { 0,0,0, 0,0,0, 0,0,0 }       // transform - zero must be computed
     },
     {
         "g18_rec709",
@@ -87,8 +165,8 @@ static const NcColorSpace _colorSpaces[] = {
         _WpD65,
         1.8,
         0.0,
-        {{ 0, 0, 0, 0 },                // transfer - zero must be computed
-         { 0,0,0, 0,0,0, 0,0,0 }}       // transform - zero must be computed
+        0, 0,
+        { 0,0,0, 0,0,0, 0,0,0 }       // transform - zero must be computed
     },
     {
         "g22_rec709",
@@ -98,8 +176,8 @@ static const NcColorSpace _colorSpaces[] = {
         _WpD65,
         2.2,
         0.0,
-        {{ 0, 0, 0, 0 },                // transfer - zero must be computed
-         { 0,0,0, 0,0,0, 0,0,0 }}       // transform - zero must be computed
+        0, 0,
+        { 0,0,0, 0,0,0, 0,0,0 }       // transform - zero must be computed
     },
     {
         "lin_adobergb",
@@ -109,8 +187,8 @@ static const NcColorSpace _colorSpaces[] = {
         _WpD65,
         1.0,
         0.0,
-        {{ 0, 0, 0, 0 },                // transfer - zero must be computed
-         { 0,0,0, 0,0,0, 0,0,0 }}       // transform - zero must be computed
+        0, 0,
+        { 0,0,0, 0,0,0, 0,0,0 }       // transform - zero must be computed
     },
     {
         "lin_ap0",
@@ -120,8 +198,8 @@ static const NcColorSpace _colorSpaces[] = {
         _WpACES,
         1.0,
         0.0,
-        {{ 0, 0, 0, 0 },                // transfer - zero must be computed
-         { 0,0,0, 0,0,0, 0,0,0 }}       // transform - zero must be computed
+        0, 0,
+        { 0,0,0, 0,0,0, 0,0,0 }       // transform - zero must be computed
     },
     {
         "lin_ap1",                      // same as acescg
@@ -131,8 +209,8 @@ static const NcColorSpace _colorSpaces[] = {
         _WpACES,
         1.0,
         0.0,
-        {{ 0, 0, 0, 0 },                // transfer - zero must be computed
-         { 0,0,0, 0,0,0, 0,0,0 }}       // transform - zero must be computed
+        0, 0,
+        { 0,0,0, 0,0,0, 0,0,0 }       // transform - zero must be computed
     },
     {
         "lin_displayp3",
@@ -142,8 +220,8 @@ static const NcColorSpace _colorSpaces[] = {
         _WpD65,
         1.0,
         0.0,
-        {{ 0, 0, 0, 0 },                // transfer - zero must be computed
-         { 0,0,0, 0,0,0, 0,0,0 }}       // transform - zero must be computed
+        0, 0,
+        { 0,0,0, 0,0,0, 0,0,0 }       // transform - zero must be computed
     },
     {
         "lin_rec709",
@@ -153,8 +231,8 @@ static const NcColorSpace _colorSpaces[] = {
         _WpD65,
         1.0,
         0.0,
-        {{ 0, 0, 0, 0 },                // transfer - zero must be computed
-         { 0,0,0, 0,0,0, 0,0,0 }}       // transform - zero must be computed
+        0, 0,
+        { 0,0,0, 0,0,0, 0,0,0 }       // transform - zero must be computed
     },
     {
         "lin_rec2020",
@@ -164,8 +242,8 @@ static const NcColorSpace _colorSpaces[] = {
         _WpD65,
         1.0,
         0.0,
-        {{ 0, 0, 0, 0 },                // transfer - zero must be computed
-         { 0,0,0, 0,0,0, 0,0,0 }}       // transform - zero must be computed
+        0, 0,
+        { 0,0,0, 0,0,0, 0,0,0 }       // transform - zero must be computed
     },
     {
         "lin_srgb",             // the same as lin_rec709
@@ -175,8 +253,8 @@ static const NcColorSpace _colorSpaces[] = {
         _WpD65,
         1.0,
         0.0,
-        {{ 0, 0, 0, 0 },                // transfer - zero must be computed
-         { 0,0,0, 0,0,0, 0,0,0 }}       // transform - zero must be computed
+        0, 0,
+        { 0,0,0, 0,0,0, 0,0,0 }       // transform - zero must be computed
     },
     {
         "srgb_displayp3",
@@ -184,10 +262,10 @@ static const NcColorSpace _colorSpaces[] = {
         { 0.2650, 0.6900 },
         { 0.1500, 0.0600 },
         _WpD65,
-        2.2,
+        2.2,                           /// @CHECK 2.4
         0.055,
-        {{ 0, 0, 0, 0 },                // transfer - zero must be computed
-         { 0,0,0, 0,0,0, 0,0,0 }}       // transform - zero must be computed
+        0, 0,
+        { 0,0,0, 0,0,0, 0,0,0 }       // transform - zero must be computed
     },
     {
         "srgb_texture",
@@ -195,10 +273,21 @@ static const NcColorSpace _colorSpaces[] = {
         { 0.300, 0.600 },
         { 0.150, 0.060 },
         _WpD65,
-        2.2,
+        2.2,                           /// @CHECK 2.4
         0.055,
-        {{ 0, 0, 0, 0 },                // transfer - zero must be computed
-         { 0,0,0, 0,0,0, 0,0,0 }}       // transform - zero must be computed
+        0, 0,
+        { 0,0,0, 0,0,0, 0,0,0 }       // transform - zero must be computed
+    },
+    {
+        "sRGB",
+        { 0.640, 0.330 },
+        { 0.300, 0.600 },
+        { 0.150, 0.060 },
+        _WpD65,
+        2.2,                           /// @CHECK 2.4
+        0.055,
+        0, 0,
+        { 0,0,0, 0,0,0, 0,0,0 }       // transform - zero must be computed
     },
     {
         "identity",
@@ -208,8 +297,19 @@ static const NcColorSpace _colorSpaces[] = {
         { 1.0/3.0, 1.0/3.0 },
         1.0,
         0.0,
-        {{ 0, 0, 0, 0 },                // transfer - zero must be computed
-         { 0,0,0, 0,0,0, 0,0,0 }}       // transform - zero must be computed
+        0, 0,
+        { 0,0,0, 0,0,0, 0,0,0 }       // transform - zero must be computed
+    },
+    {
+        "raw",
+        { 1.0, 0.0 },                   // these chromaticities generate identity
+        { 0.0, 1.0 },
+        { 0.0, 0.0 },
+        { 1.0/3.0, 1.0/3.0 },
+        1.0,
+        0.0,
+        0, 0,
+        { 0,0,0, 0,0,0, 0,0,0 }       // transform - zero must be computed
     }
 };
 
@@ -220,13 +320,40 @@ const char** NcRegisteredColorSpaceNames()
     static int registeredColorSpaces = 0;
     if (!registeredColorSpaces) {
         for (int i = 0; i < colorspaces; ++i)
-            colorspaceNames[i] = _colorSpaces[i].name;
+            colorspaceNames[i] = _colorSpaces[i].desc.name;
         colorspaceNames[colorspaces] = nullptr;
         registeredColorSpaces = colorspaces;
     }
     return colorspaceNames;
 }
 
+bool NcColorSpaceEqual(const NcColorSpace* cs1, const NcColorSpace* cs2) {
+    if (!cs1 || !cs2) {
+        return false;
+    }
+
+    if (cs1->desc.name == nullptr || cs2->desc.name == nullptr) {
+        return false;
+    }
+
+    if (strcmp(cs1->desc.name, cs1->desc.name) != 0) {
+        return false;
+    }
+
+    // compare color transform op matrix and transfer op
+    for (int i = 0; i < 9; i++) {
+        if (fabsf(cs1->rgbToXYZ.m[i] - cs2->rgbToXYZ.m[i]) > 1e-5f) {
+            return false;
+        }
+    }
+    if (fabsf(cs1->desc.gamma - cs2->desc.gamma) > 1e-3f) {
+        return false;
+    }
+    if (fabsf(cs1->desc.linearBias - cs2->desc.linearBias) > 1e-3f) {
+        return false;
+    }
+    return true;
+}
 
 static NcM33f NcM3ffInvert(NcM33f m) {
     NcM33f inv;
@@ -273,41 +400,54 @@ void checkInvertAndMultiply() {
 #endif
 
 void NcInitColorSpace(NcColorSpace* cs) {
-    if (!cs || cs->colorTransform.transform.m[8] != 0.0)
+    if (!cs || cs->rgbToXYZ.m[8] != 0.0)
         return;
     
-    const float a = cs->linearBias;
-    const float gamma = cs->gamma;
+    // init will overwrite K0, phi.
     
-    cs->colorTransform.transfer.linearBias = a;
-    cs->colorTransform.transfer.K0 = 0.f;
-    cs->colorTransform.transfer.gamma = cs->gamma;
+    const float a = cs->desc.linearBias;
+    const float gamma = cs->desc.gamma;
     
     if (gamma == 1.f) {
-        cs->colorTransform.transfer.K0 = 1.e9f;
-        cs->colorTransform.transfer.phi = 1.f;
+        cs->K0 = 1.e9f;
+        cs->phi = 1.f;
     }
     else {
         if (a <= 0.f) {
-            cs->colorTransform.transfer.K0 = 0.f;
-            cs->colorTransform.transfer.phi = 1.f;
+            cs->K0 = 0.f;
+            cs->phi = 1.f;
         }
         else {
-            cs->colorTransform.transfer.K0 = a / (gamma - 1.f);
-            cs->colorTransform.transfer.phi = (a /
+            cs->K0 = a / (gamma - 1.f);
+            cs->phi = (a /
                                                expf(logf(gamma * a /
                                                          (gamma + gamma * a - 1.f - a)) * gamma)) /
             (gamma - 1.f);
         }
     }
     
+    // if the primaries are zero, the cs was defined by the 3x3 matrix, don't overwrite it.
+    if (cs->desc.whitePoint.x == 0.f)
+        return;
+    
     NcM33f m;
     // To be consistent, we use SMPTE RP 177-1993
     // compute xyz [little xyz]
-    float red[3]   = { cs->redPrimary.x,   cs->redPrimary.y,   1.f - cs->redPrimary.x   - cs->redPrimary.y };
-    float green[3] = { cs->greenPrimary.x, cs->greenPrimary.y, 1.f - cs->greenPrimary.x - cs->greenPrimary.y };
-    float blue[3]  = { cs->bluePrimary.x,  cs->bluePrimary.y,  1.f - cs->bluePrimary.x  - cs->bluePrimary.y };
-    float white[3] = { cs->whitePoint.x,   cs->whitePoint.y,   1.f - cs->whitePoint.x   - cs->whitePoint.y };
+    float red[3]   = { cs->desc.redPrimary.x,
+                       cs->desc.redPrimary.y,
+                       1.f - cs->desc.redPrimary.x - cs->desc.redPrimary.y };
+    
+    float green[3] = { cs->desc.greenPrimary.x,
+                       cs->desc.greenPrimary.y,
+                       1.f - cs->desc.greenPrimary.x - cs->desc.greenPrimary.y };
+    
+    float blue[3]  = { cs->desc.bluePrimary.x,
+                       cs->desc.bluePrimary.y,
+                       1.f - cs->desc.bluePrimary.x - cs->desc.bluePrimary.y };
+    
+    float white[3] = { cs->desc.whitePoint.x,
+                       cs->desc.whitePoint.y,
+                       1.f - cs->desc.whitePoint.x - cs->desc.whitePoint.y };
     
     // Build the P matrix by column binding red, green, and blue:
     m.m[0] = red[0];
@@ -345,57 +485,80 @@ void NcInitColorSpace(NcColorSpace* cs) {
     
     // overwrite the transform. It's fine if two threads do it simultaneously
     // because they will both write the same value.
-    cs->colorTransform.transform = m;
+    cs->rgbToXYZ = m;
 }
 
-NcM33f NcGetRGBToCIEXYZMatrix(NcColorSpace* cs) {
+const NcColorSpace* NcCreateColorSpace(const NcColorSpaceDescriptor* csd) {
+    if (!csd)
+        return NULL;
+    
+    NcColorSpace* cs = (NcColorSpace*) calloc(sizeof(*cs), 0);
+    cs->desc = *csd;
+    cs->desc.name = strdup(csd->name);
+    NcInitColorSpace(cs);
+    return cs;
+}
+
+const NcColorSpace* NcCreateColorSpaceM33(const NcColorSpaceM33Descriptor* csd) {
+    if (!csd)
+        return NULL;
+    
+    NcColorSpace* cs = (NcColorSpace*) calloc(sizeof(*cs), 0);
+    cs->desc.name = strdup(csd->name);
+    cs->desc.redPrimary = {0,0,0};
+    cs->desc.greenPrimary = {0,0,0};
+    cs->desc.bluePrimary = {0,0,0};
+    cs->desc.whitePoint = {0,0};
+    cs->desc.gamma = csd->gamma;
+    cs->desc.linearBias = csd->linearBias;
+    cs->rgbToXYZ = csd->rgbToXYZ;
+    NcInitColorSpace(cs);
+    return cs;
+}
+
+
+NcM33f NcGetRGBToCIEXYZMatrix(const NcColorSpace* cs) {
     if (!cs)
         return {1,0,0, 0,1,0, 0,0,1};
     
-    NcInitColorSpace(cs);
-    return cs->colorTransform.transform;
+    return cs->rgbToXYZ;
 }
 
-NcM33f NcGetCIEXYZToRGBMatrix(NcColorSpace* cs) {
+NcM33f NcGetCIEXYZToRGBMatrix(const NcColorSpace* cs) {
     if (!cs)
         return {1,0,0, 0,1,0, 0,0,1};
     
     return NcM3ffInvert(NcGetRGBToCIEXYZMatrix(cs));
 }
 
-NcColorTransform GetRGBtoRGBTransform(NcColorSpace* src, NcColorSpace* dst) {
-    NcColorTransform t;
-    t.transform = NcM33fMultiply(NcM3ffInvert(NcGetRGBToCIEXYZMatrix(src)),
+NcM33f GetRGBtoRGBMatrix(const NcColorSpace* src, const NcColorSpace* dst) {
+    auto t = NcM33fMultiply(NcM3ffInvert(NcGetRGBToCIEXYZMatrix(src)),
                                  NcGetCIEXYZToRGBMatrix(dst));
     return t;
 }
 
 // convert from gamma to linear by raising to gamma
-inline float nc_ToLinear(NcColorSpace* cs, float t) {
-    const float gamma = cs->colorTransform.transfer.gamma;
-    //return powf(t, gamma);
-    if (t < cs->colorTransform.transfer.K0)
-        return t / cs->colorTransform.transfer.phi;
-    const float a = cs->colorTransform.transfer.linearBias;
+inline float nc_ToLinear(const NcColorSpace* cs, float t) {
+    const float gamma = cs->desc.gamma;
+    if (t < cs->K0)
+        return t / cs->phi;
+    const float a = cs->desc.linearBias;
     return powf((t + a) / (1.f + a), gamma);
 }
 
 // convert linear to gamma by raising to 1/gamma
-inline float nc_FromLinear(NcColorSpace* cs, float t) {
-    const float gamma = cs->colorTransform.transfer.gamma;
-    //return powf(t, 1.f/gamma);
-    if (t < cs->colorTransform.transfer.K0 / cs->colorTransform.transfer.phi)
-        return t * cs->colorTransform.transfer.phi;
-    const float a = cs->colorTransform.transfer.linearBias;
+inline float nc_FromLinear(const NcColorSpace* cs, float t) {
+    const float gamma = cs->desc.gamma;
+    if (t < cs->K0 / cs->phi)
+        return t * cs->phi;
+    const float a = cs->desc.linearBias;
     return (1.f + a) * powf(t, 1.f / gamma) - a;
 }
 
-NcM33f NcGetRGBToRGBTransform(NcColorSpace* src, NcColorSpace* dst) {
+NcM33f NcGetRGBToRGBMatrix(const NcColorSpace* src, const NcColorSpace* dst) {
     if (!dst || !src) {
         return {};
     }
-    NcInitColorSpace(dst);
-    NcInitColorSpace(src);
     
     NcM33f toXYZ = NcGetRGBToCIEXYZMatrix(src);
     NcM33f fromXYZ = NcGetCIEXYZToRGBMatrix(dst);
@@ -404,13 +567,10 @@ NcM33f NcGetRGBToRGBTransform(NcColorSpace* src, NcColorSpace* dst) {
     return tx;
 }
 
-NcRGB NcTransformColor(NcColorSpace* dst, NcColorSpace* src, NcRGB rgb) {
+NcRGB NcTransformColor(const NcColorSpace* dst, const NcColorSpace* src, NcRGB rgb) {
     if (!dst || !src) {
         return rgb;
     }
-    
-    NcInitColorSpace(dst);
-    NcInitColorSpace(src);
     
     NcM33f tx = NcM33fMultiply(NcGetRGBToCIEXYZMatrix(src),
                                NcGetCIEXYZToRGBMatrix(dst));
@@ -430,13 +590,10 @@ NcRGB NcTransformColor(NcColorSpace* dst, NcColorSpace* src, NcRGB rgb) {
     return out;
 }
 
-void NcTransformColors(NcColorSpace* dst, NcColorSpace* src, NcRGB* rgb, int count)
+void NcTransformColors(const NcColorSpace* dst, const NcColorSpace* src, NcRGB* rgb, int count)
 {
     if (!dst || !src || !rgb)
         return;
-    
-    NcInitColorSpace(dst);
-    NcInitColorSpace(src);
     
     NcM33f tx = NcM33fMultiply(NcGetRGBToCIEXYZMatrix(src),
                                NcGetCIEXYZToRGBMatrix(dst));
@@ -501,15 +658,17 @@ void NcTransformColors(NcColorSpace* dst, NcColorSpace* src, NcRGB* rgb, int cou
     // writes 4 floats, and we may not have 4 floats left
     start = count - 2;
     count = 1;
-#endif
-    
+#else
     for (int i = start; i < count; i++) {
-        NcRGB out = rgb[i];
-        out.r = tx.m[0] * out.r + tx.m[1] * out.g + tx.m[2] * out.b;
-        out.r = tx.m[3] * out.r + tx.m[4] * out.g + tx.m[5] * out.b;
-        out.r = tx.m[6] * out.r + tx.m[7] * out.g + tx.m[8] * out.b;
+        NcRGB in = rgb[i];
+        NcRGB out = {
+            tx.m[0] * in.r + tx.m[1] * in.g + tx.m[2] * in.b,
+            tx.m[3] * in.r + tx.m[4] * in.g + tx.m[5] * in.b,
+            tx.m[6] * in.r + tx.m[7] * in.g + tx.m[8] * in.b
+        };
         rgb[i] = out;
     }
+#endif
     
     for (int i = 0; i < count; i++) {
         NcRGB out = rgb[i];
@@ -521,13 +680,11 @@ void NcTransformColors(NcColorSpace* dst, NcColorSpace* src, NcRGB* rgb, int cou
 }
 
 // same as NcTransformColor, but preserve alpha in the transformation
-void NcTransformColorsWithAlpha(NcColorSpace* dst, NcColorSpace* src, float* rgba, int count)
+void NcTransformColorsWithAlpha(const NcColorSpace* dst, const NcColorSpace* src,
+                                float* rgba, int count)
 {
     if (!dst || !src || !rgba)
         return;
-    
-    NcInitColorSpace(dst);
-    NcInitColorSpace(src);
     
     NcM33f tx = NcM33fMultiply(NcGetRGBToCIEXYZMatrix(src),
                                NcGetCIEXYZToRGBMatrix(dst));
@@ -578,10 +735,12 @@ void NcTransformColorsWithAlpha(NcColorSpace* dst, NcColorSpace* src, float* rgb
     }
 #else
     for (int i = 0; i < count; i++) {
-        NcRGB out = { rgba[i * 4 + 0], rgba[i * 4 + 1], rgba[i * 4 + 2] };
-        out.r = tx.m[0] * out.r + tx.m[1] * out.g + tx.m[2] * out.b;
-        out.r = tx.m[3] * out.r + tx.m[4] * out.g + tx.m[5] * out.b;
-        out.r = tx.m[6] * out.r + tx.m[7] * out.g + tx.m[8] * out.b;
+        NcRGB in = { rgba[i * 4 + 0], rgba[i * 4 + 1], rgba[i * 4 + 2] };
+        NcRGB out = {
+            tx.m[0] * in.r + tx.m[1] * in.g + tx.m[2] * in.b,
+            tx.m[3] * in.r + tx.m[4] * in.g + tx.m[5] * in.b,
+            tx.m[6] * in.r + tx.m[7] * in.g + tx.m[8] * in.b
+        };
         rgba[i * 4 + 0] = out.r;
         rgba[i * 4 + 1] = out.g;
         rgba[i * 4 + 2] = out.b;
@@ -599,25 +758,23 @@ void NcTransformColorsWithAlpha(NcColorSpace* dst, NcColorSpace* src, float* rgb
     }
 }
 
-NcCIEXYZ NcRGBToXYZ(NcColorSpace* ct, NcRGB rgb) {
+NcCIEXYZ NcRGBToXYZ(const NcColorSpace* ct, NcRGB rgb) {
     if (!ct)
-        return (NcCIEXYZ
-                ) {0,0,0};
+        return (NcCIEXYZ) {0,0,0};
     
     rgb.r = nc_ToLinear(ct, rgb.r);
     rgb.g = nc_ToLinear(ct, rgb.g);
     rgb.b = nc_ToLinear(ct, rgb.b);
     
     NcM33f m = NcGetRGBToCIEXYZMatrix(ct);
-    return (NcCIEXYZ
-            ) {
+    return (NcCIEXYZ) {
         m.m[0] * rgb.r + m.m[1] * rgb.g + m.m[2] * rgb.b,
         m.m[3] * rgb.r + m.m[4] * rgb.g + m.m[5] * rgb.b,
         m.m[6] * rgb.r + m.m[7] * rgb.g + m.m[8] * rgb.b
     };
 }
 
-NcRGB NcXYZToRGB(NcColorSpace* ct, NcCIEXYZ xyz) {
+NcRGB NcXYZToRGB(const NcColorSpace* ct, NcCIEXYZ xyz) {
     if (!ct)
         return (NcRGB) {0,0,0};
     
@@ -635,32 +792,19 @@ NcRGB NcXYZToRGB(NcColorSpace* ct, NcCIEXYZ xyz) {
     return rgb;
 }
 
-NcColorSpace NcGetNamedColorSpace(const char* name_)
+const NcColorSpace* NcGetNamedColorSpace(const char* name)
 {
-    if (name_) {
-        const char* name = name_;
-        if (!strcmp(name, "raw")) {
-            // USD files may name "raw" to mean identity
-            name = "identity";
-        }
-        else if (!strcmp(name, "auto")) {
-            // what acutally is the intent of "auto"?
-            name = "identity";
-        }
-        else if (!strcmp(name, "sRGB")) {
-            // USD files may name "sRGB" to mean srgb_texture
-            name = "srgb_texture";
-        }
+    if (name) {
         for (int i = 0; i < sizeof(_colorSpaces) / sizeof(_colorSpaces[0]); i++) {
-            if (strcmp(name, _colorSpaces[i].name) == 0) {
-                return _colorSpaces[i];
+            if (strcmp(name, _colorSpaces[i].desc.name) == 0) {
+                NcInitColorSpace((NcColorSpace*) &_colorSpaces[i]); // ensure initialization
+                return &_colorSpaces[i];
             }
         }
     }
     
-    NcColorSpace ret = NcColorSpace();
-    memset(&ret, 0, sizeof(ret));
-    return ret;
+    // currently Nanocolor doesn't have a concept of registering new color spaces
+    return NULL;
 }
 
 // Note: This routine is exposed via NanocolorUtils, but the tables aren't
@@ -688,13 +832,39 @@ NCCONCAT(NCNAMESPACE, MatchLinearColorSpace)
 (NcCIEXYZ redPrimary, NcCIEXYZ greenPrimary, NcCIEXYZ bluePrimary,
  NcXYChromaticity  whitePoint, float threshold) {
     for (int i = 0; i < sizeof(_colorSpaces) / sizeof(NcColorSpace); ++i) {
-        if (CompareCIEXYZ(_colorSpaces[i].redPrimary, redPrimary, threshold) &&
-            CompareCIEXYZ(_colorSpaces[i].greenPrimary, greenPrimary, threshold) &&
-            CompareCIEXYZ(_colorSpaces[i].bluePrimary, bluePrimary, threshold) &&
-            CompareCIEXYChromaticity(_colorSpaces[i].whitePoint, whitePoint, threshold))
-            return _colorSpaces[i].name;
+        if (CompareCIEXYZ(_colorSpaces[i].desc.redPrimary, redPrimary, threshold) &&
+            CompareCIEXYZ(_colorSpaces[i].desc.greenPrimary, greenPrimary, threshold) &&
+            CompareCIEXYZ(_colorSpaces[i].desc.bluePrimary, bluePrimary, threshold) &&
+            CompareCIEXYChromaticity(_colorSpaces[i].desc.whitePoint, whitePoint, threshold))
+            return _colorSpaces[i].desc.name;
     }
     return NULL;
+}
+
+bool NcGetColorSpaceDescriptor(const NcColorSpace* cs, NcColorSpaceDescriptor* desc) {
+    if (!cs || !desc)
+        return false;
+    if (cs->desc.whitePoint.x == 0.f)
+        return false;
+    memcpy(desc, &cs->desc, sizeof(NcColorSpaceDescriptor));
+    return true;
+}
+
+bool NcGetColorSpaceM33Descriptor(const NcColorSpace* cs, NcColorSpaceM33Descriptor* desc) {
+    if (!cs || !desc)
+        return false;
+    desc->name = cs->desc.name;
+    desc->gamma = cs->desc.gamma;
+    desc->linearBias = cs->desc.linearBias;
+    desc->rgbToXYZ = cs->rgbToXYZ;
+    return true;
+}
+
+void NcGetK0Phi(const NcColorSpace* cs, float* K0, float* phi) {
+    if (cs && K0 && phi) {
+        *K0 = cs->K0;
+        *phi = cs->phi;
+    }
 }
 
 } // extern "C"

@@ -22,8 +22,8 @@
 // language governing permissions and limitations under the Apache License.
 //
 
-#ifndef nanocolor_utils_h
-#define nanocolor_utils_h
+#ifndef PXR_BASE_GF_NC_NANOCOLOR_UTILS_H
+#define PXR_BASE_GF_NC_NANOCOLOR_UTILS_H
 
 #include "Nanocolor.h"
 
@@ -34,8 +34,8 @@ extern "C" {
 #define NcKelvinToXYZ                NCCONCAT(NCNAMESPACE, KelvinToXYZ)
 #define NcISO17321_ColorChips_AP0    NCCONCAT(NCNAMESPACE, ISO17321_ColorChips_AP0)
 #define NcISO17321_ColorChips_Names  NCCONCAT(NCNAMESPACE, ISO17321_ColorChips_Names)
-#define NcISO17321_ColorChips_SRGB   NCCONCAT(NCNAMESPACE, ISO17321_ColorChips_SRGB)
-#define NcISO17321_ColorChips_xyY    NCCONCAT(NCNAMESPACE, ISONcISO17321_ColorChips_xyY17321_ColorChips_SRGB)
+#define NcChecker_ColorChips_SRGB    NCCONCAT(NCNAMESPACE, Checker_ColorChips_SRGB)
+#define NcMcCamy1976_ColorChips_xyY  NCCONCAT(NCNAMESPACE, NcMcCamy1976_ColorChips_xyY)
 #define NcProjectToChromaticities    NCCONCAT(NCNAMESPACE, ProjectToChromaticities)
 #define NcNormalizeXYZ               NCCONCAT(NCNAMESPACE, NormalizeXYZ)
 #define NcRGBFromYxy                 NCCONCAT(NCNAMESPACE, RGBFromYxy)
@@ -48,17 +48,21 @@ extern "C" {
 // but the crossfade is not sandardized, and so is left as an exercise to the reader.
 NCAPI NcCIEXYZ NcKelvinToXYZ(float temperature, float luminosity);
 
-// return a pointer to 24 color values in ap0 corresponding to
-// the 24 color chips in ISO standard chart 17321
-// These AP0 values have been obtained from specification document.
-NCAPI NcRGB* NcISO17321_ColorChips_AP0(void);
+// return the names of the 24 color chips in these charts.
 NCAPI const char** NcISO17321_ColorChips_Names(void);
 
-// These values were obtained from https://en.wikipedia.org/wiki/ColorChecker
-NCAPI NcRGB* NcISO17321_ColorChips_SRGB(void);
+// return a pointer to 24 color values in ap0 corresponding to
+// the 24 color chips in ISO 17321-1:2012 Table D.1
+NCAPI NcRGB* NcISO17321_ColorChips_AP0(void);
 
-// These values were obtained from https://en.wikipedia.org/wiki/ColorChecker
-NCAPI NcCIEXYZ* NcISO17321_ColorChips_xyY(void);
+// these measurements are under D65 illuminant, and are similar but do not match 
+// the ISO table https://xritephoto.com/documents/literature/en/ColorData-1p_EN.pdf
+NCAPI NcRGB* NcChecker_ColorChips_SRGB(void);
+
+// these measurements are under Illuminant C, which is not normative
+// https://home.cis.rit.edu/~cnspci/references/mccamy1976.pdf. Again, these
+// are similar but do not match the ISO table. nor the x-rite table.
+NCAPI NcCIEXYZ* NcMcCamy1976_ColorChips_xyY(void);
 
 // given a CIEXYZ 1931 color coordinate, project it to the
 // regularized chromaticity coordinate
@@ -66,7 +70,7 @@ NCAPI NcCIEXYZ NcProjectToChromaticities(NcCIEXYZ c);
 
 NCAPI NcCIEXYZ NcNormalizeXYZ(NcCIEXYZ c);
 
-NCAPI NcRGB NcRGBFromYxy(NcColorSpace* cs, NcCIEXYZ c);
+NCAPI NcRGB NcRGBFromYxy(const NcColorSpace* cs, NcCIEXYZ c);
 
 NCAPI NcCIEXYZ NcCIE1931ColorFromWavelength(float lambda, bool approx);
 
@@ -81,5 +85,5 @@ NCAPI const char* NcMatchLinearColorSpace(NcCIEXYZ redPrimary,
 }
 #endif
 
-#endif /* nanocolor_extras_h */
+#endif /* PXR_BASE_GF_NC_NANOCOLOR_UTILS_H */
  

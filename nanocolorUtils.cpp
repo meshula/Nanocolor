@@ -2,6 +2,14 @@
 // Copyright 2024 Pixar
 //
 // Licensed under the Apache License, Version 2.0 (the "Apache License")
+// with the following modification; you may not use this file except in
+// compliance with the Apache License and the following modification to it:
+// Section 6. Trademarks. is deleted and replaced with:
+//
+// 6. Trademarks. This License does not grant permission to use the trade
+//    names, trademarks, service marks, or product names of the Licensor
+//    and its affiliates, except as required to comply with Section 4(c) of
+//    the License and to reproduce the content of the NOTICE file.
 //
 // You may obtain a copy of the Apache License at
 //
@@ -87,7 +95,7 @@ static NcRGB _ISO17321_ap0[24] = {
 
 // these measurements are under Illuminant C, which is not normative
 // https://home.cis.rit.edu/~cnspci/references/mccamy1976.pdf
-static NcCIEXYZ _ISO17321_xyY[24] = {
+static NcCIEXYZ _McCamy1976_xyY[24] = {
     { 0.400, 0.350, 10.10 },
     { 0.377, 0.345, 35.80 },
     { 0.247, 0.251, 19.30 },
@@ -117,7 +125,7 @@ static NcCIEXYZ _ISO17321_xyY[24] = {
 // these measurements are under D65 illuminant, and may not match the ISO chart
 // https://xritephoto.com/documents/literature/en/ColorData-1p_EN.pdf
 #define F(r, g, b) (float)(r)/255.f, (float)(g)/255.f, (float(b)/255.f)
-static NcRGB _ISO17321_SRGB[24] = {
+static NcRGB _Checker_SRGB[24] = {
     { F(115, 82, 68) },
     { F(194, 150, 130) },
     { F(98, 122, 157) },
@@ -176,8 +184,8 @@ static const char* _ISO17321_names[24] = {
 
 NcRGB* NcISO17321_ColorChips_AP0() { return _ISO17321_ap0; }
 const char** NcISO17321_ColorChips_Names() { return _ISO17321_names; }
-NcRGB* NcISO17321_ColorChips_SRGB() { return _ISO17321_SRGB; }
-NcCIEXYZ* NcISO17321_ColorChips_xyY() { return  _ISO17321_xyY; }
+NcRGB* NcChecker_ColorChips_SRGB() { return _Checker_SRGB; }
+NcCIEXYZ* NcMcCamy1976_ColorChips_xyY() { return  _McCamy1976_xyY; }
 
 NcCIEXYZ NcProjectToChromaticities(NcCIEXYZ c) {
     float n  = c.x + c.y + c.z;
@@ -197,7 +205,7 @@ NcCIEXYZ NcNormalizeXYZ(NcCIEXYZ c) {
     };
 }
 
-NcRGB NcRGBFromYxy(NcColorSpace* cs, NcCIEXYZ c) {
+NcRGB NcRGBFromYxy(const NcColorSpace* cs, NcCIEXYZ c) {
     NcCIEXYZ cxyz = NcNormalizeXYZ(c);
     float t = cxyz.x; cxyz.x = cxyz.y; cxyz.y = t;
     NcRGB rgb = NcXYZToRGB(cs, cxyz);
@@ -696,6 +704,7 @@ NcCIEXYZ normalize(NcCIEXYZ c) {
     return r;
 }
 
+static
 float xFit_1931( float wave ) {
     float t1 = (wave-442.0f)*((wave<442.0f)?0.0624f:0.0374f);
     float t2 = (wave-599.8f)*((wave<599.8f)?0.0264f:0.0323f);
@@ -704,12 +713,14 @@ float xFit_1931( float wave ) {
                                     - 0.065f*expf(-0.5f*t3*t3);
 }
 
+static
 float yFit_1931( float wave ) {
     float t1 = (wave-568.8f)*((wave<568.8f)?0.0213f:0.0247f);
     float t2 = (wave-530.9f)*((wave<530.9f)?0.0613f:0.0322f);
     return 0.821f*exp(-0.5f*t1*t1) + 0.286f*expf(-0.5f*t2*t2);
 }
 
+static
 float zFit_1931( float wave )
 {
     float t1 = (wave-437.0f)*((wave<437.0f)?0.0845f:0.0278f);
@@ -745,7 +756,6 @@ NcCIEXYZ NcCIE1931ColorFromWavelength(float lambda, bool approx) {
     c1931.z = c1931.z * (1.f - a) + c2.z * a;
     return normalize(c1931);
 }
-
 
 #ifdef __cplusplus
 }
