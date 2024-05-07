@@ -77,8 +77,6 @@ static const char _lin_adobergb[] = "lin_adobergb";
 const char* Nc_lin_adobergb = _lin_adobergb;
 static const char _lin_ap0[] = "lin_ap0";
 const char* Nc_lin_ap0 = _lin_ap0;
-static const char _lin_ap0_d65[] = "lin_ap0_d65";
-const char* Nc_lin_ap0_d65 = _lin_ap0_d65;
 static const char _lin_ap1[] = "lin_ap1";
 const char* Nc_lin_ap1 = _lin_ap1;
 static const char _lin_displayp3[] = "lin_displayp3";
@@ -149,7 +147,7 @@ static void _NcInitColorSpace(NcColorSpace* cs);
 
 static NcColorSpace _colorSpaces[] = {
     {
-        _acescg,                    // same as lin_ap0
+        _acescg,
         { 0.713, 0.293 },
         { 0.165, 0.830 },
         { 0.128, 0.044 },
@@ -231,17 +229,6 @@ static NcColorSpace _colorSpaces[] = {
         { 0.0000, 1.0000  },
         { 0.0001, -0.0770 },
         _WpACES,
-        1.0,
-        0.0,
-        0, 0,
-        { 0,0,0, 0,0,0, 0,0,0 }       // transform - zero must be computed
-    },
-    {
-        _lin_ap0_d65,
-        { 0.7347, 0.2653  },
-        { 0.0000, 1.0000  },
-        { 0.0001, -0.0770 },
-        _WpD65,
         1.0,
         0.0,
         0, 0,
@@ -369,7 +356,6 @@ static const char* _colorSpaceNames[] = {
     _identity,
     _lin_adobergb,
     _lin_ap0,
-    _lin_ap0_d65,
     _lin_ap1,
     _lin_displayp3,
     _lin_rec709,
