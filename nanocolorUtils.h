@@ -25,17 +25,17 @@
 #ifndef PXR_BASE_GF_NC_NANOCOLOR_UTILS_H
 #define PXR_BASE_GF_NC_NANOCOLOR_UTILS_H
 
-#include "Nanocolor.h"
+#include "nanocolor.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define NcKelvinToXYZ                NCCONCAT(NCNAMESPACE, KelvinToXYZ)
-#define NcISO17321_ColorChips_AP0    NCCONCAT(NCNAMESPACE, ISO17321_ColorChips_AP0)
-#define NcISO17321_ColorChips_Names  NCCONCAT(NCNAMESPACE, ISO17321_ColorChips_Names)
-#define NcChecker_ColorChips_SRGB    NCCONCAT(NCNAMESPACE, Checker_ColorChips_SRGB)
-#define NcMcCamy1976_ColorChips_xyY  NCCONCAT(NCNAMESPACE, NcMcCamy1976_ColorChips_xyY)
+#define NcISO17321ColorChipsAP0      NCCONCAT(NCNAMESPACE, ISO17321ColorChipsAP0)
+#define NcISO17321ColorChipsNames    NCCONCAT(NCNAMESPACE, ISO17321ColorChipsNames)
+#define NcCheckerColorChipsSRGB      NCCONCAT(NCNAMESPACE, CheckerColorChipsSRGB)
+#define NcMcCamy1976ColorChipsxyY    NCCONCAT(NCNAMESPACE, McCamy1976ColorChipsxyY)
 #define NcProjectToChromaticities    NCCONCAT(NCNAMESPACE, ProjectToChromaticities)
 #define NcNormalizeXYZ               NCCONCAT(NCNAMESPACE, NormalizeXYZ)
 #define NcRGBFromYxy                 NCCONCAT(NCNAMESPACE, RGBFromYxy)
@@ -49,20 +49,20 @@ extern "C" {
 NCAPI NcCIEXYZ NcKelvinToXYZ(float temperature, float luminosity);
 
 // return the names of the 24 color chips in these charts.
-NCAPI const char** NcISO17321_ColorChips_Names(void);
+NCAPI const char** NcISO17321ColorChipsNames(void);
 
 // return a pointer to 24 color values in ap0 corresponding to
 // the 24 color chips in ISO 17321-1:2012 Table D.1
-NCAPI NcRGB* NcISO17321_ColorChips_AP0(void);
+NCAPI NcRGB* NcISO17321ColorChipsAP0(void);
 
 // these measurements are under D65 illuminant, and are similar but do not match 
 // the ISO table https://xritephoto.com/documents/literature/en/ColorData-1p_EN.pdf
-NCAPI NcRGB* NcChecker_ColorChips_SRGB(void);
+NCAPI NcRGB* NcCheckerColorChipsSRGB(void);
 
 // these measurements are under Illuminant C, which is not normative
 // https://home.cis.rit.edu/~cnspci/references/mccamy1976.pdf. Again, these
 // are similar but do not match the ISO table. nor the x-rite table.
-NCAPI NcCIEXYZ* NcMcCamy1976_ColorChips_xyY(void);
+NCAPI NcCIEXYZ* NcMcCamy1976ColorChipsxyY(void);
 
 // given a CIEXYZ 1931 color coordinate, project it to the
 // regularized chromaticity coordinate
@@ -73,13 +73,6 @@ NCAPI NcCIEXYZ NcNormalizeXYZ(NcCIEXYZ c);
 NCAPI NcRGB NcRGBFromYxy(const NcColorSpace* cs, NcCIEXYZ c);
 
 NCAPI NcCIEXYZ NcCIE1931ColorFromWavelength(float lambda, bool approx);
-
-// a reasonable threshold is 1e-4.
-NCAPI const char* NcMatchLinearColorSpace(NcCIEXYZ redPrimary, 
-                                          NcCIEXYZ greenPrimary,
-                                          NcCIEXYZ bluePrimary,
-                                          NcXYChromaticity  whitePoint, 
-                                          float epsilon);
 
 #ifdef __cplusplus
 }

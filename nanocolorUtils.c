@@ -22,16 +22,12 @@
 // language governing permissions and limitations under the Apache License.
 //
 
-#include "NanocolorUtils.h"
+#include "nanocolorUtils.h"
 #include <math.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 NcCIEXYZ NcKelvinToXYZ(float temperature, float luminosity) {
     if (temperature < 1667 || temperature > 25000)
-        return {0,0};
+        return (NcCIEXYZ) {0,0};
 
     const float t = temperature;
     const float t2 = t * t;
@@ -52,10 +48,9 @@ NcCIEXYZ NcKelvinToXYZ(float temperature, float luminosity) {
     else if( 4000 <  t && t <= 25000)
         cy = 3.0817580 * cx3 - 5.87338670 * cx2 + 3.75112997 * cx - 0.37001483;
     
-    return { luminosity, cx, cy };
+    return (NcCIEXYZ) { luminosity, cx, cy };
 }
 
-namespace {
 // ISO 17321-1:2012 Table D.1
 // ap0 is the aces name for 2065-1
 /*
@@ -124,33 +119,34 @@ static NcCIEXYZ _McCamy1976_xyY[24] = {
 
 // these measurements are under D65 illuminant, and may not match the ISO chart
 // https://xritephoto.com/documents/literature/en/ColorData-1p_EN.pdf
-#define F(r, g, b) (float)(r)/255.f, (float)(g)/255.f, (float(b)/255.f)
+#define RGB(r, g, b) {(float)(r)/255.f, (float)(g)/255.f, (float)(b)/255.f}
 static NcRGB _Checker_SRGB[24] = {
-    { F(115, 82, 68) },
-    { F(194, 150, 130) },
-    { F(98, 122, 157) },
-    { F(87, 108, 67) },
-    { F(133, 128, 177) },
-    { F(103, 189, 170) },
-    { F(214, 126, 44) },
-    { F(80, 91, 166) },
-    { F(193, 90, 99) },
-    { F(94, 60, 108) },
-    { F(157, 188, 64) },
-    { F(224, 163, 46) },
-    { F(56, 61, 150) },
-    { F(70, 148, 73) },
-    { F(175, 54, 60) },
-    { F(231, 199, 31) },
-    { F(187, 86, 149) },
-    { F(8, 133, 161) },
-    { F(243, 243, 242) },
-    { F(200, 200, 200) },
-    { F(160, 160, 160) },
-    { F(122, 122, 121) },
-    { F(85, 85, 85) },
-    { F(52, 52, 52) }
+    RGB(115, 82, 68),
+    RGB(194, 150, 130),
+    RGB(98, 122, 157),
+    RGB(87, 108, 67),
+    RGB(133, 128, 177),
+    RGB(103, 189, 170),
+    RGB(214, 126, 44),
+    RGB(80, 91, 166),
+    RGB(193, 90, 99),
+    RGB(94, 60, 108),
+    RGB(157, 188, 64),
+    RGB(224, 163, 46),
+    RGB(56, 61, 150),
+    RGB(70, 148, 73),
+    RGB(175, 54, 60),
+    RGB(231, 199, 31),
+    RGB(187, 86, 149),
+    RGB(8, 133, 161),
+    RGB(243, 243, 242),
+    RGB(200, 200, 200),
+    RGB(160, 160, 160),
+    RGB(122, 122, 121),
+    RGB(85, 85, 85),
+    RGB(52, 52, 52)
 };
+#undef RGB
 
 static const char* _ISO17321_names[24] = {
     "Dark skin",
@@ -179,17 +175,15 @@ static const char* _ISO17321_names[24] = {
     "Black"
 };
 
-} // anon
 
-
-NcRGB* NcISO17321_ColorChips_AP0() { return _ISO17321_ap0; }
-const char** NcISO17321_ColorChips_Names() { return _ISO17321_names; }
-NcRGB* NcChecker_ColorChips_SRGB() { return _Checker_SRGB; }
-NcCIEXYZ* NcMcCamy1976_ColorChips_xyY() { return  _McCamy1976_xyY; }
+NcRGB* NcISO17321ColorChipsAP0() { return _ISO17321_ap0; }
+const char** NcISO17321ColorChipsNames() { return _ISO17321_names; }
+NcRGB* NcCheckerColorChipsSRGB() { return _Checker_SRGB; }
+NcCIEXYZ* NcMcCamy1976ColorChipsxyY() { return  _McCamy1976_xyY; }
 
 NcCIEXYZ NcProjectToChromaticities(NcCIEXYZ c) {
     float n  = c.x + c.y + c.z;
-    return { c.x / n, c.y / n, c.z / n };
+    return (NcCIEXYZ) { c.x / n, c.y / n, c.z / n };
 }
 
 NcCIEXYZ NcNormalizeXYZ(NcCIEXYZ c) {
@@ -198,30 +192,40 @@ NcCIEXYZ NcNormalizeXYZ(NcCIEXYZ c) {
     float Y = c.x;
     float x = c.y;
     float y = c.z;
-    return {
+    return (NcCIEXYZ) {
         Y,
         Y * x / y,
         Y * (1.f - x - y) / y
     };
 }
 
+static inline float sign_of(float x) {
+    return x > 0 ? 1.f : (x < 0) ? -1.f : 0.f;
+}
+
 NcRGB NcRGBFromYxy(const NcColorSpace* cs, NcCIEXYZ c) {
     NcCIEXYZ cxyz = NcNormalizeXYZ(c);
     float t = cxyz.x; cxyz.x = cxyz.y; cxyz.y = t;
     NcRGB rgb = NcXYZToRGB(cs, cxyz);
-    
-    float maxc = (rgb.r > rgb.g) ? rgb.r : rgb.g;
-    maxc = maxc > rgb.b ? maxc : rgb.b;
-    rgb.r /= maxc;
-    rgb.g /= maxc;
-    rgb.b /= maxc;
+
+    NcRGB magRgb = {
+        fabsf(rgb.r),
+        fabsf(rgb.g),
+        fabsf(rgb.b) };
+
+    float maxc = (magRgb.r > magRgb.g) ? magRgb.r : magRgb.g;
+    maxc = maxc > magRgb.b ? maxc : magRgb.b;
+    rgb = (NcRGB) {
+        sign_of(rgb.r) * rgb.r / maxc,
+        sign_of(rgb.g) * rgb.g / maxc,
+        sign_of(rgb.b) * rgb.b / maxc };
     return rgb;
 }
 
-/* This file contains the CIE XYZ 1931 Standard Observer curves    */
-/*    sampled at 1 nm intervals, from 360 nm to 830 nm.  This data */
-/*    obtained from:  http://www.cis.rit.edu/mcsl/online/cie.php   */
+/* These values are chromaticity coordinates sampled at one nanometer intervals
+   from the standard color matching functions published in
 
+    Commission Internationale de l’Éclairage Proceedings, 1931. */
 
 static float const xyz1931_1nm[471][3] = {
     { 0.000130f, 0.000004f, 0.000606f },    // 360 nm
@@ -756,7 +760,3 @@ NcCIEXYZ NcCIE1931ColorFromWavelength(float lambda, bool approx) {
     c1931.z = c1931.z * (1.f - a) + c2.z * a;
     return normalize(c1931);
 }
-
-#ifdef __cplusplus
-}
-#endif
