@@ -101,118 +101,13 @@ _____
 
 ## Nanocolor API
 
-For a description of data types, please refer to Nanocolor.h
-
-```c
-NcColorSpace     NcGetNamedColorSpace(const char* name);
-NcM33f           NcGetRGBToCIEXYZMatrix(NcColorSpace* cs);
-NcM33f           NcGetCIEXYZToRGBMatrix(NcColorSpace* cs);
-NcM33f           NcGetRGBToRGBTransform(NcColorSpace* src, NcColorSpace* dst);
-NcRGB            NcTransformColor(NcColorSpace* dst, NcColorSpace* src, NcRGB rgb);
-NcCIEXYZ         NcRGBToXYZ(NcColorSpace* cs, NcRGB rgb);
-NcRGB            NcXYZToRGB(NcColorSpace* cs, NcCIEXYZ xyz);
-void             NcInitColorSpace(NcColorSpace* cs);
-const char**     NcRegisteredColorSpaceNames();
-```
-
-`NcGetNamedColorSpace` ~ returns a named color space, if it is
-known by Nanocolor
-
-`NcGetRGBToCIEXYZMatrix` ~ given a color space compute the
-corresponding RP177-1993 3x3 matrix
-
-`NcGetCIEXYZToRGBMatrix` ~ given a color space compute the
-corresponding RP177-1993 3x3 matrix
-
-`NcGetRGBToRGBTransform` ~ given two color spaces, compute a
-color transform that moves a color from the source color 
-space to a destination
-
-`NcTransformColor` ~ a convience function, that given a color and
-two color spaces, transforms the color and returns it. Note that
-if many values must be transformed it's far more efficient to reuse
-a color transform object.
-
-`NcRGBToXYZ` ~ return the CIEXYZ coordinates for an RGB color
-
-`NcXYZToRGB` ~ return an RGB color given CIEXYZ coordinates
-
-`NcInitColorSpace` ~ create an identity color space which can be
-further modified to create a color space object compatible with
-the other functions
-
-## NanocolorUtils API
-
-`NanocolorUtils.h` declares a number of useful functions such as
-might be used by test programs and the like. It is an optional
-component, and you may choose to omit it from your project.
-
-```c
-NcCIEXYZ NcKelvinToXYZ(float temperature, float luminosity);
-NcRGB*   NcISO17321_AP0_ColorChips();
-NCAPI    NcCIEXYZ* NcISO17321_ColorChips_xyY(void);
-NCAPI    const char** NcISO17321_ColorChips_Names(void);
-NcCIEXYZ NcProjectToChromaticities(NcCIEXYZ c);
-NcCIEXYZ NcNormalizeXYZ(NcCIEXYZ c);
-NcRGB    NcRGBFromYxy(NcColorSpace* cs, NcCIEXYZ c);
-NcCIEXYZ NcCIE1931ColorFromWavelength(float lambda, bool approx);
-NCAPI const char* NcMatchLinearColorSpace(NcCIEXYZ redPrimary, 
-                                          NcCIEXYZ greenPrimary,
-                                          NcCIEXYZ bluePrimary,
-                                          NcXYChromaticity  whitePoint, 
-                                          float epsilon);
-```
-
-`NcKelvinToXYZ` ~ returns an XYZ coordinate for the blackbody 
-emission spectrum for values between 1667 and 25000K
-
-`NcISO17321_AP0_ColorChips` ~ return a pointer to 24 color values
-in the ap0 gamut corresponding to the 24 color chips in ISO 
-standard chart 17321
-
-`NcISO17321_AP0_ColorChips` ~ common names for those chips
-
-`NcISO17321_ColorChips_xyY` ~ the same but as xyY values
-
-`NcISO17321_ColorChips_SRGB` ~ an alternative set of values commonly in use
-despite not strictly matching the specification
-
-`NcProjectToChromaticities` ~ given a CIEXYZ 1931 color 
-coordinate, project it to the regularized chromaticity coordinate
-
-`NcNormalizeXYZ` ~ given a CIEXYZ 1931 color
-coordinate, normalize it to a unit luminance
-
-`NcRGBFromYxy` ~ given a CIEXY coordinate, and a luminace,
-compute an RGB value for the given color space
-
-`NcCIE1931ColorFromWavelength` ~ compute a CIEXYZ coordinate
-for a given wavelength. If plotted, the values will land on
-the boundary of the familiar color gamut diagram.
-
-`NcMatchLinearColorSpace` ~ given primaries and whitepoint, return a
-corresponding nanocolor named colorspace if one matches.
+Refer to nanocolor.h
 
 ## Building
 
-The interface types are expected to be stable, and to be 
-compatible between all versions of Nanocolor. If the types need to be
-revised, new ones will be introduced with a new name. The functions however
-may change, and may be locally modified, and it's expected that
-more than one copy of Nanocolor may be linked. Therefore, they are 
-namespaced via a macro, even though the names appear to be simply
-prefixed with Nc. When building Nanocolor, you may provide your
-own preprocessor macro to distinguish your copy of it.
-
-```c
-#ifndef NCNAMESPACE
-#define NCNAMESPACE pxr_nc_1_0_
-#endif
-```
-
 There are no build scripts included with Nanocolor. You may build
-it as a library if you wish, or you may include Nanocolor.cpp,
-and optionally NanocolorUtils.cpp in your project.
+it as a library if you wish, or you may include nanocolor.c,
+and optionally nanocolorUtils.c in your project.
 
 ## License and Copyright
 
