@@ -31,7 +31,7 @@
 extern "C" {
 #endif
 
-#define NcKelvinToXYZ                NCCONCAT(NCNAMESPACE, KelvinToXYZ)
+#define NcKelvinToYxy                NCCONCAT(NCNAMESPACE, KelvinToYxy)
 #define NcISO17321ColorChipsAP0      NCCONCAT(NCNAMESPACE, ISO17321ColorChipsAP0)
 #define NcISO17321ColorChipsNames    NCCONCAT(NCNAMESPACE, ISO17321ColorChipsNames)
 #define NcCheckerColorChipsSRGB      NCCONCAT(NCNAMESPACE, CheckerColorChipsSRGB)
@@ -42,11 +42,11 @@ extern "C" {
 #define NcCIE1931ColorFromWavelength NCCONCAT(NCNAMESPACE, CIE1931ColorFromWavelength)
 #define NcMatchLinearColorSpace      NCCONCAT(NCNAMESPACE, MatchLinearColorSpace)
 
-// returns an XYZ coordinate for the blackbody emission spectrum
+// returns an Yxy coordinate for the blackbody emission spectrum
 // for values between 1667 and 25000K. A common handling of temperatures 
 // above a certain point is to crossfade to CIE daylight illumination, 
 // but the crossfade is not sandardized, and so is left as an exercise to the reader.
-NCAPI NcCIEXYZ NcKelvinToXYZ(float temperature, float luminosity);
+NCAPI NcYxy NcKelvinToYxy(float temperature, float luminosity);
 
 // return the names of the 24 color chips in these charts.
 NCAPI const char** NcISO17321ColorChipsNames(void);
@@ -62,17 +62,17 @@ NCAPI NcRGB* NcCheckerColorChipsSRGB(void);
 // these measurements are under Illuminant C, which is not normative
 // https://home.cis.rit.edu/~cnspci/references/mccamy1976.pdf. Again, these
 // are similar but do not match the ISO table. nor the x-rite table.
-NCAPI NcCIEXYZ* NcMcCamy1976ColorChipsxyY(void);
+NCAPI NcXYZ* NcMcCamy1976ColorChipsxyY(void);
 
-// given a CIEXYZ 1931 color coordinate, project it to the
+// given a XYZ 1931 color coordinate, project it to the
 // regularized chromaticity coordinate
-NCAPI NcCIEXYZ NcProjectToChromaticities(NcCIEXYZ c);
+NCAPI NcXYZ NcProjectToChromaticities(NcXYZ c);
 
-NCAPI NcCIEXYZ NcNormalizeXYZ(NcCIEXYZ c);
+NCAPI NcXYZ NcNormalizeXYZ(NcXYZ c);
 
-NCAPI NcRGB NcRGBFromYxy(const NcColorSpace* cs, NcCIEXYZ c);
+NCAPI NcRGB NcRGBFromYxy(const NcColorSpace* cs, NcYxy c);
 
-NCAPI NcCIEXYZ NcCIE1931ColorFromWavelength(float lambda, bool approx);
+NCAPI NcXYZ NcCIE1931ColorFromWavelength(float lambda, bool approx);
 
 #ifdef __cplusplus
 }

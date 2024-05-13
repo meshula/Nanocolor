@@ -20,7 +20,7 @@ that Nanocolor concerns itself with.
 
 OpenEXR goes so far as to restrict itself to linear working
 spaces, and describes them completed by specifying chromaticities
-and an adapted whitepoint in the CIEXYZ 1931 space. Nanocolor
+and an adapted whitepoint in the CIE XYZ 1931 space. Nanocolor
 takes inspiration from this, and uses the equations in SMPTE
 document RP177-1993 (reaffirmed in 2002) ~ SMPTE Recommended
 Practice: Derivation of Basic Television Equations.
@@ -59,12 +59,12 @@ For a description of data types, please refer to Nanocolor.h
 
 ```c
 NcColorSpace     NcGetNamedColorSpace(const char* name);
-NcM33f           NcGetRGBToCIEXYZMatrix(NcColorSpace* cs);
-NcM33f           NcGetCIEXYZToRGBMatrix(NcColorSpace* cs);
+NcM33f           NcGetRGBToXYZMatrix(NcColorSpace* cs);
+NcM33f           NcGetXYZToRGBMatrix(NcColorSpace* cs);
 NcColorTransform NcGetRGBToRGBTransform(NcColorSpace* src, NcColorSpace* dst);
 NcRGB            NcTransformColor(NcColorSpace* dst, NcColorSpace* src, NcRGB rgb);
-NcCIEXYZ         NcRGBToXYZ(NcColorSpace* cs, NcRGB rgb);
-NcRGB            NcXYZToRGB(NcColorSpace* cs, NcCIEXYZ xyz);
+NcXYZ            NcRGBToXYZ(NcColorSpace* cs, NcRGB rgb);
+NcRGB            NcXYZToRGB(NcColorSpace* cs, NcXYZ xyz);
 void             NcInitColorSpace(NcColorSpace* cs);
 NcColorSpace     NcMakeEmptyColorSpace(void);
 ```
@@ -72,10 +72,10 @@ NcColorSpace     NcMakeEmptyColorSpace(void);
 `NcGetNamedColorSpace` ~ returns a named color space, if it is
 known by Nanocolor
 
-`NcGetRGBToCIEXYZMatrix` ~ given a color space compute the
+`NcGetRGBToXYZMatrix` ~ given a color space compute the
 corresponding RP177-1993 3x3 matrix
 
-`NcGetCIEXYZToRGBMatrix` ~ given a color space compute the
+`NcGetXYZToRGBMatrix` ~ given a color space compute the
 corresponding RP177-1993 3x3 matrix
 
 `NcGetRGBToRGBTransform` ~ given two color spaces, compute a
@@ -87,9 +87,9 @@ two color spaces, transforms the color and returns it. Note that
 if many values must be transformed it's far more efficient to reuse
 a color transform object.
 
-`NcRGBToXYZ` ~ return the CIEXYZ coordinates for an RGB color
+`NcRGBToXYZ` ~ return the XYZ coordinates for an RGB color
 
-`NcXYZToRGB` ~ return an RGB color given CIEXYZ coordinates
+`NcXYZToRGB` ~ return an RGB color given XYZ coordinates
 
 `NcInitColorSpace` ~ create an identity color space which can be
 further modified to create a color space object compatible with
@@ -105,31 +105,31 @@ might be used by test programs and the like. It is an optional
 component, and you may choose to omit it from your project.
 
 ```c
-NcCIEXYZ NcKelvinToXYZ(float temperature, float luminosity);
+NcXYZ NcKelvinToYxy(float temperature, float luminosity);
 NcRGB* NcISO17321_AP0_ColorChips();
-NcCIEXYZ NcProjectToChromaticities(NcCIEXYZ c);
-NcCIEXYZ NcNormalizeXYZ(NcCIEXYZ c);
-NcRGB NcRGBFromYxy(NcColorSpace* cs, NcCIEXYZ c);
-NcCIEXYZ NcCIE1931ColorFromWavelength(float lambda, bool approx);
+NcXYZ NcProjectToChromaticities(NcXYZ c);
+NcXYZ NcNormalizeXYZ(NcXYZ c);
+NcRGB NcRGBFromYxy(NcColorSpace* cs, NcYxy c);
+NcXYZ NcCIE1931ColorFromWavelength(float lambda, bool approx);
 ```
 
-`NcKelvinToXYZ` ~ returns an XYZ coordinate for the blackbody 
+`NcKelvinToYxy` ~ returns an XYZ coordinate for the blackbody 
 emission spectrum for values between 1667 and 25000K
 
 `NcISO17321_AP0_ColorChips` ~ return a pointer to 24 color values
 in the ap0 gamut corresponding to the 24 color chips in ISO 
 standard chart 17321
 
-`NcProjectToChromaticities` ~ given a CIEXYZ 1931 color 
+`NcProjectToChromaticities` ~ given a CIE XYZ 1931 color 
 coordinate, project it to the regularized chromaticity coordinate
 
-`NcNormalizeXYZ(NcCIEXYZ c)` ~ given a CIEXYZ 1931 color
+`NcNormalizeXYZ(NcXYZ c)` ~ given a CIE XYZ 1931 color
 coordinate, normalize it to a unit luminance
 
 `NcRGBFromYxy` ~ given a CIEXY coordinate, and a luminace,
 compute an RGB value for the given color space
 
-`NcCIE1931ColorFromWavelength` ~ compute a CIEXYZ coordinate
+`NcCIE1931ColorFromWavelength` ~ compute a CIE XYZ coordinate
 for a given wavelength. If plotted, the values will land on
 the boundary of the familiar color gamut diagram.
 
