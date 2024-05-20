@@ -37,11 +37,15 @@
 #include <arm_neon.h>
 #endif
 
+// Internal data structure to hold computed color space data, and the initial
+// decsriptor.
 struct NcColorSpace {
     NcColorSpaceDescriptor desc;
     float K0, phi;
     NcM33f rgbToXYZ;
 };
+
+static void _NcInitColorSpace(NcColorSpace* cs);
 
 static float nc_ToLinear(const NcColorSpace* cs, float t) {
     const float gamma = cs->desc.gamma;
@@ -139,11 +143,9 @@ NCAPI const char*  NcGetDescription(const NcColorSpace* cs) {
     return cs->desc.name;
 }
 
-static void _NcInitColorSpace(NcColorSpace* cs);
-
 // White point chromaticities.
-#define _WpD65 (NcChromaticity) { 0.3127, 0.3290 }
-#define _WpACES (NcChromaticity) { 0.32168, 0.33767 }
+#define _WpD65 { 0.3127, 0.3290 }
+#define _WpACES { 0.32168, 0.33767 }
 
 static NcColorSpace _colorSpaces[] = {
     {
@@ -434,23 +436,10 @@ static NcM33f NcM33fMultiply(NcM33f lh, NcM33f rh) {
     return m;
 }
 
-#if 0
-/// @TODO move to test suite
-void checkInvertAndMultiply() {
-    // this gives the correct result per Annex C
-    NcM33f s = { 0.56711181859, 0.2793268677, 0, 0.1903210663, 0.6434664624, 0.0725032634, 0.1930166748, 0.0772066699, 1.0165544874 };
-    NcM33f d = { 0.4123907993, 0.2126390059, 0.0193308187, 0.3575843394, 0.7151686788, 0.1191947798, 0.1804807884, 0.0721923154, 0.9505321522 };
-    NcM33f di = NcM3ffInvert(d);
-    NcM33f sd = NcM33fMultiply(s, di);
-}
-#endif
-
 static void _NcInitColorSpace(NcColorSpace* cs) {
     if (!cs || cs->rgbToXYZ.m[8] != 0.0)
         return;
-    
-    // init will overwrite K0, phi.
-    
+        
     const float a = cs->desc.linearBias;
     const float gamma = cs->desc.gamma;
     
@@ -529,8 +518,6 @@ static void _NcInitColorSpace(NcColorSpace* cs) {
     m.m[7] *= C[1];
     m.m[8] *= C[2];
     
-    // overwrite the transform. It's fine if two threads do it simultaneously
-    // because they will both write the same value.
     cs->rgbToXYZ = m;
 }
 
@@ -892,6 +879,13 @@ NcYxy NcXYZToYxy(NcXYZ xyz) {
     return (NcYxy) {xyz.y, xyz.x / sum, xyz.y / sum};
 }
 
+NCAPI NcXYZ NcYxyToXYZ(NcYxy Yxy) {
+    return (NcXYZ) { 
+        Yxy.Y * Yxy.x / Yxy.y,
+        Yxy.Y,
+        Yxy.Y * (1.f - Yxy.x - Yxy.y) / Yxy.y };
+}
+
 const NcColorSpace* NcGetNamedColorSpace(const char* name)
 {
     if (name) {
@@ -970,3 +964,66 @@ void NcGetK0Phi(const NcColorSpace* cs, float* K0, float* phi) {
         *phi = cs->phi;
     }
 }
+
+/* This is actually u'v', u'v' is uv scaled by 1.5 along the v axis
+*/
+
+typedef struct {
+    float Y;
+    float u;
+    float v;
+} NcYuvPrime;
+
+NcYxy _NcYuv2Yxy(NcYuvPrime c) {
+    float d = 6.f * c.u - 16.f * c.v + 12.f;
+    return (NcYxy) {
+        c.Y,
+        9.f * c.u / d,
+        4.f * c.v / d
+    };
+}
+
+/* Equations from the paper "An Algorithm to Calculate Correlated Colour 
+   Temperature" by M. Krystek in 1985, using a rational Chebyshev approximation.
+*/
+NcYxy NcKelvinToYxy(float T, float luminance) {
+    if (T < 1000 || T > 15000)
+        return (NcYxy) { 0, 0, 0 };
+
+    float u = (0.860117757 + 1.54118254e-4 * T + 1.2864121e-7 * T * T) /
+              (1.0 + 8.42420235e-4 * T + 7.08145163e-7 * T * T);
+    float v = (0.317398726 + 4.22806245e-5 * T + 4.20481691e-8 * T * T) /
+              (1.0 - 2.89741816e-5 * T + 1.61456053e-7 * T * T);
+
+    return _NcYuv2Yxy((NcYuvPrime) {luminance, u, 3.f * v / 2.f });
+}
+
+NcYxy NcNormalizeYxy(NcYxy c) {
+    return (NcYxy) {
+        c.Y,
+        c.Y * c.x / c.y,
+        c.Y * (1.f - c.x - c.y) / c.y
+    };
+}
+
+static inline float sign_of(float x) {
+    return x > 0 ? 1.f : (x < 0) ? -1.f : 0.f;
+}
+
+NcRGB NcYxyToRGB(const NcColorSpace* cs, NcYxy c) {
+    NcYxy cYxy = NcNormalizeYxy(c);
+    NcRGB rgb = NcXYZToRGB(cs, (NcXYZ) { cYxy.x, cYxy.Y, cYxy.y });
+    NcRGB magRgb = {
+        fabsf(rgb.r),
+        fabsf(rgb.g),
+        fabsf(rgb.b) };
+
+    float maxc = (magRgb.r > magRgb.g) ? magRgb.r : magRgb.g;
+    maxc = maxc > magRgb.b ? maxc : magRgb.b;
+    NcRGB ret = (NcRGB) {
+        sign_of(rgb.r) * rgb.r / maxc,
+        sign_of(rgb.g) * rgb.g / maxc,
+        sign_of(rgb.b) * rgb.b / maxc };
+    return ret;
+}
+

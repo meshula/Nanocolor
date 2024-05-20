@@ -21,18 +21,16 @@
 // KIND, either express or implied. See the Apache License for the specific
 // language governing permissions and limitations under the Apache License.
 //
-
 #ifndef PXR_BASE_GF_NC_NANOCOLOR_H
 #define PXR_BASE_GF_NC_NANOCOLOR_H
 
 #include <stdbool.h>
 #include <stddef.h>
 
-// NCNAMESPACE is provided to introduce a namespace to the symbols
-// so that multiple libraries can include the nanocolor library
-// without symbol conflicts. The default is nc_1_0_ to indicate the
-// 1.0 version of Nanocolor.
-
+// NCNAMESPACE is allows the introduction of a namespace to the symbols so that 
+// multiple libraries can include the nanocolor library without symbol 
+// conflicts. The default is nc_1_0_ to indicate the 1.0 version of Nanocolor.
+//
 // pxr: note that the PXR namespace macros are in pxr/pxr.h which
 // is a C++ only header; so the generated namespace prefixes can't be
 // used here.
@@ -40,14 +38,20 @@
 #define NCNAMESPACE pxr_nc_1_0_
 #endif
 
-// NCCONCAT is the means by which the namespace is applied to the symbols
-// in the public interface.
+// The NCCONCAT macro is used to apply a namespace to the symbols in the public
+// interface.
 #define NCCONCAT1(a, b) a ## b
 #define NCCONCAT(a, b) NCCONCAT1(a, b)
 
 // NCAPI may be overridden externally to control symbol visibility.
 #ifndef NCAPI
 #define NCAPI
+#endif
+
+#ifdef __cplusplus
+#define NCEXTERNC extern "C" NCAPI
+#else
+#define NCEXTERNC extern NCAPI
 #endif
 
 #define NcChromaticity NCCONCAT(NCNAMESPACE, Chromaticity)
@@ -74,8 +78,7 @@ typedef struct {
     float Y, x, y;
 } NcYxy;
 
-// NcRGB is an rgb coordinate with no intrinsic color space; it's merely
-// a convenient way to store three named floats.
+// NcRGB is an rgb coordinate with no intrinsic color space.
 typedef struct {
     float r, g, b;
 } NcRGB;
@@ -87,10 +90,9 @@ typedef struct {
     float m[9];
 } NcM33f;
 
-// NcColorSpaceDescriptor is a struct that describes a color space.
+// NcColorSpaceDescriptor describes a color space.
 // The color space is defined by the red, green, and blue primaries,
 // the white point, the gamma of the log section, and the linear bias.
-
 typedef struct {
     const char*       name;
     NcChromaticity    redPrimary, greenPrimary, bluePrimary;
@@ -99,6 +101,8 @@ typedef struct {
     float             linearBias; // where the linear section ends
 } NcColorSpaceDescriptor;
 
+// NcColorSpaceM33Descriptor describes a color space defined in terms of a 
+// 3x3 matrix, the gamma of the log section, and the linear bias.
 typedef struct {
     const char*       name;
     NcM33f            rgbToXYZ;
@@ -141,12 +145,6 @@ extern "C" {
  - srgb_texture:     The sRGB color space.
 */
 
-#ifdef __cplusplus
-#define NCEXTERNC extern "C" NCAPI
-#else
-#define NCEXTERNC extern NCAPI
-#endif
-
 NCEXTERNC const char* Nc_acescg;
 NCEXTERNC const char* Nc_adobergb;
 NCEXTERNC const char* Nc_g18_ap1;
@@ -166,39 +164,36 @@ NCEXTERNC const char* Nc_srgb_displayp3;
 NCEXTERNC const char* Nc_sRGB;
 NCEXTERNC const char* Nc_srgb_texture;
 
-// declare the public interface using a C style namespace macro
-// this will allow several libraries to incorporate the nanocolor library
-// directly as source without running into symbol or API conflicts.
-// Change the namespace here to make the symbols unique.
-// Recommended: Foo_nc_ to embed nanocolor in library Foo.
-#define NcInitColorSpaceLibrary      NCCONCAT(NCNAMESPACE, InitColorSpaceLibrary)
+// Declare the public interface using the namespacing macro.
+#define NcColorSpaceEqual            NCCONCAT(NCNAMESPACE, ColorSpaceEqual)
 #define NcCreateColorSpace           NCCONCAT(NCNAMESPACE, CreateColorSpace)
 #define NcCreateColorSpaceM33        NCCONCAT(NCNAMESPACE, CreateColorSpaceM33)
 #define NcFreeColorSpace             NCCONCAT(NCNAMESPACE, FreeColorSpace)
-#define NcColorSpaceEqual            NCCONCAT(NCNAMESPACE, ColorSpaceEqual)
-#define NcRegisteredColorSpaceNames  NCCONCAT(NCNAMESPACE, RegisteredColorSpaceNames)
-#define NcGetNamedColorSpace         NCCONCAT(NCNAMESPACE, GetNamedColorSpace)
-#define NcGetRGBToXYZMatrix          NCCONCAT(NCNAMESPACE, GetRGBtoXYZMatrix)
-#define NcGetXYZToRGBMatrix          NCCONCAT(NCNAMESPACE, GetXYZtoRGBMatrix)
-#define NcGetRGBToRGBMatrix          NCCONCAT(NCNAMESPACE, GetRGBToRGBMatrix)
-#define NcTransformColor             NCCONCAT(NCNAMESPACE, TransformColor)
-#define NcTransformColorsWithAlpha   NCCONCAT(NCNAMESPACE, TransformColorsWithAlpha)
-#define NcTransformColors            NCCONCAT(NCNAMESPACE, TransformColors)
-#define NcNormalizeLuminance         NCCONCAT(NCNAMESPACE, NormalizeLuminance)
-#define NcRGBToXYZ                   NCCONCAT(NCNAMESPACE, RGBToXYZ)
-#define NcXYZToRGB                   NCCONCAT(NCNAMESPACE, XYZToRGB)
-#define NcXYZToYxy                   NCCONCAT(NCNAMESPACE, XYZToYxy)
 #define NcGetColorSpaceDescriptor    NCCONCAT(NCNAMESPACE, GetColorSpaceDescriptor)
 #define NcGetColorSpaceM33Descriptor NCCONCAT(NCNAMESPACE, GetColorSpaceM33Descriptor)
-#define NcGetK0Phi                   NCCONCAT(NCNAMESPACE, GetK0Phi)
 #define NcGetDescription             NCCONCAT(NCNAMESPACE, GetDescription)
+#define NcGetK0Phi                   NCCONCAT(NCNAMESPACE, GetK0Phi)
+#define NcGetNamedColorSpace         NCCONCAT(NCNAMESPACE, GetNamedColorSpace)
+#define NcGetRGBToRGBMatrix          NCCONCAT(NCNAMESPACE, GetRGBToRGBMatrix)
+#define NcGetRGBToXYZMatrix          NCCONCAT(NCNAMESPACE, GetRGBtoXYZMatrix)
+#define NcGetXYZToRGBMatrix          NCCONCAT(NCNAMESPACE, GetXYZtoRGBMatrix)
+#define NcInitColorSpaceLibrary      NCCONCAT(NCNAMESPACE, InitColorSpaceLibrary)
+#define NcKelvinToYxy                NCCONCAT(NCNAMESPACE, KelvinToYxy)
 #define NcMatchLinearColorSpace      NCCONCAT(NCNAMESPACE, MatchLinearColorSpace)
+#define NcRegisteredColorSpaceNames  NCCONCAT(NCNAMESPACE, RegisteredColorSpaceNames)
+#define NcRGBToXYZ                   NCCONCAT(NCNAMESPACE, RGBToXYZ)
+#define NcTransformColor             NCCONCAT(NCNAMESPACE, TransformColor)
+#define NcTransformColors            NCCONCAT(NCNAMESPACE, TransformColors)
+#define NcTransformColorsWithAlpha   NCCONCAT(NCNAMESPACE, TransformColorsWithAlpha)
+#define NcXYZToRGB                   NCCONCAT(NCNAMESPACE, XYZToRGB)
+#define NcXYZToYxy                   NCCONCAT(NCNAMESPACE, XYZToYxy)
+#define NcYxyToRGB                   NCCONCAT(NCNAMESPACE, YxyToRGB)
+#define NcYxyToXYZ                   NCCONCAT(NCNAMESPACE, YxyToXYZ)
 
 /**
  * @brief Initializes the color space library.
  * 
  * Initializes the color spaces provided in the built-in color space library. 
- * 
  * This function is not thread-safe and must be called before NcGetNamedColorSpace
  * is called.
  * 
@@ -207,8 +202,27 @@ NCEXTERNC const char* Nc_srgb_texture;
 NCAPI void NcInitColorSpaceLibrary(void);
 
 /**
- * @brief Creates a color space object based on the provided color space descriptor.
+ * @brief Retrieves the names of the registered color spaces.
  * 
+ * Retrieves the names of the color spaces that have been registered.
+ * This function must not be called before NcInitColorSpaceLibrary is called.
+ * 
+ * @return Pointer to an array of strings containing the names of the registered color spaces.
+ */
+NCAPI const char** NcRegisteredColorSpaceNames(void);
+
+/**
+ * @brief Retrieves a named color space.
+ * 
+ * Retrieves a color space object based on the provided name.
+ * This function must not be called before NcInitColorSpaceLibrary is called.
+ * 
+ * @param name The name of the color space to retrieve.
+ * @return Pointer to the color space object, or NULL if not found.
+ */
+NCAPI const NcColorSpace* NcGetNamedColorSpace(const char* name);
+
+/**
  * Creates a color space object based on the provided color space descriptor.
  * 
  * @param cs Pointer to the color space descriptor.
@@ -217,8 +231,6 @@ NCAPI void NcInitColorSpaceLibrary(void);
 NCAPI const NcColorSpace* NcCreateColorSpace(const NcColorSpaceDescriptor* cs);
 
 /**
- * @brief Creates a color space object based on the provided 3x3 matrix color space descriptor.
- * 
  * Creates a color space object based on the provided 3x3 matrix color space descriptor.
  * 
  * @param cs Pointer to the 3x3 matrix color space descriptor.
@@ -230,8 +242,7 @@ NCAPI const NcColorSpace* NcCreateColorSpaceM33(const NcColorSpaceM33Descriptor*
 /**
  * @brief Frees the memory associated with a color space object.
  * 
- * Frees the memory associated with a color space object.
- * 
+ * Frees the memory associated with a color space object. 
  * If this function is called on one of the built in library color spaces, it will
  * return without freeing the memory.
  * 
@@ -241,31 +252,6 @@ NCAPI const NcColorSpace* NcCreateColorSpaceM33(const NcColorSpaceM33Descriptor*
 NCAPI void NcFreeColorSpace(const NcColorSpace* cs);
 
 /**
- * @brief Retrieves the names of the registered color spaces.
- * 
- * Retrieves the names of the color spaces that have been registered.
- * 
- * This function must not be called before NcInitColorSpaceLibrary is called.
- * 
- * @return Pointer to an array of strings containing the names of the registered color spaces.
- */
-NCAPI const char** NcRegisteredColorSpaceNames(void);
-
-/**
- * @brief Retrieves a named color space.
- * 
- * Retrieves a color space object based on the provided name.
- * 
- * This function must not be called before NcInitColorSpaceLibrary is called.
- * 
- * @param name The name of the color space to retrieve.
- * @return Pointer to the color space object, or NULL if not found.
- */
-NCAPI const NcColorSpace* NcGetNamedColorSpace(const char* name);
-
-/**
- * @brief Retrieves the RGB to XYZ transformation matrix for a given color space.
- * 
  * Retrieves the RGB to XYZ transformation matrix for a given color space.
  * 
  * @param cs Pointer to the color space object.
@@ -274,8 +260,6 @@ NCAPI const NcColorSpace* NcGetNamedColorSpace(const char* name);
 NCAPI NcM33f NcGetRGBToXYZMatrix(const NcColorSpace* cs);
 
 /**
- * @brief Retrieves the XYZ to RGB transformation matrix for a given color space.
- * 
  * Retrieves the XYZ to RGB transformation matrix for a given color space.
  * 
  * @param cs Pointer to the color space object.
@@ -284,8 +268,6 @@ NCAPI NcM33f NcGetRGBToXYZMatrix(const NcColorSpace* cs);
 NCAPI NcM33f NcGetXYZToRGBMatrix(const NcColorSpace* cs);
 
 /**
- * @brief Retrieves the RGB to RGB transformation matrix from source to destination color space.
- * 
  * Retrieves the RGB to RGB transformation matrix from source to destination color space.
  * 
  * @param src Pointer to the source color space object.
@@ -295,8 +277,6 @@ NCAPI NcM33f NcGetXYZToRGBMatrix(const NcColorSpace* cs);
 NCAPI NcM33f NcGetRGBToRGBMatrix(const NcColorSpace* src, const NcColorSpace* dst);
 
 /**
- * @brief Transforms a color from one color space to another.
- * 
  * Transforms a color from one color space to another.
  * 
  * @param dst Pointer to the destination color space object.
@@ -307,8 +287,6 @@ NCAPI NcM33f NcGetRGBToRGBMatrix(const NcColorSpace* src, const NcColorSpace* ds
 NCAPI NcRGB NcTransformColor(const NcColorSpace* dst, const NcColorSpace* src, NcRGB rgb);
 
 /**
- * @brief Transforms an array of colors from one color space to another.
- * 
  * Transforms an array of colors from one color space to another.
  * 
  * @param dst Pointer to the destination color space object.
@@ -321,8 +299,6 @@ NCAPI void NcTransformColors(const NcColorSpace* dst, const NcColorSpace* src,
                              NcRGB* rgb, size_t count);
 
 /**
- * @brief Transforms an array of colors with alpha channel from one color space to another.
- * 
  * Transforms an array of colors with alpha channel from one color space to another.
  * 
  * @param dst Pointer to the destination color space object.
@@ -335,20 +311,6 @@ NCAPI void NcTransformColorsWithAlpha(const NcColorSpace* dst, const NcColorSpac
                                       float* rgba, size_t count);
 
 /**
- * @brief Normalizes the luminance of a color.
- * 
- * Normalizes the luminance of a color to the provided value.
- * 
- * @param cs Pointer to the color space object.
- * @param rgb The RGB color to normalize.
- * @param luminance The luminance value to normalize to.
- * @return The normalized RGB color.
-*/
-NCAPI NcRGB NcNormalizeLuminance(const NcColorSpace* cs, NcRGB rgb, float luminance);
-
-/**
- * @brief Converts an RGB color to XYZ color space.
- * 
  * Converts an RGB color to XYZ color space using the provided color space.
  * 
  * @param cs Pointer to the color space object.
@@ -358,8 +320,6 @@ NCAPI NcRGB NcNormalizeLuminance(const NcColorSpace* cs, NcRGB rgb, float lumina
 NCAPI NcXYZ  NcRGBToXYZ(const NcColorSpace* cs, NcRGB rgb);
 
 /**
- * @brief Converts a XYZ color to RGB color space.
- * 
  * Converts a XYZ color to RGB color space using the provided color space.
  * 
  * @param cs Pointer to the color space object.
@@ -369,8 +329,6 @@ NCAPI NcXYZ  NcRGBToXYZ(const NcColorSpace* cs, NcRGB rgb);
 NCAPI NcRGB NcXYZToRGB(const NcColorSpace* cs, NcXYZ xyz);
 
 /**
- * @brief Converts a XYZ color to Yxy color space.
- * 
  * Converts a XYZ color to Yxy color space.
  * 
  * @param xyz The XYZ color to convert.
@@ -379,8 +337,23 @@ NCAPI NcRGB NcXYZToRGB(const NcColorSpace* cs, NcXYZ xyz);
 NCAPI NcYxy NcXYZToYxy(NcXYZ xyz);
 
 /**
- * @brief Checks if two color space objects are equal.
+ * Converts an Yxy color coordinate to XYZ.
  * 
+ * @param Yxy The Yxy color coordinate.
+ * @return The XYZ color coordinate.
+ */
+NCAPI NcXYZ NcYxyToXYZ(NcYxy Yxy);
+
+/**
+ * Converts an Yxy color coordinate to RGB using the specified color space.
+ * 
+ * @param cs The color space.
+ * @param c The Yxy color coordinate.
+ * @return The RGB color coordinate.
+ */
+NCAPI NcRGB NcYxyToRGB(const NcColorSpace* cs, NcYxy c);
+
+/**
  * Checks if two color space objects are equal by comparing their properties.
  * 
  * @param cs1 Pointer to the first color space object.
@@ -418,8 +391,6 @@ NCAPI bool NcGetColorSpaceDescriptor(const NcColorSpace* cs, NcColorSpaceDescrip
 NCAPI bool NcGetColorSpaceM33Descriptor(const NcColorSpace* cs, NcColorSpaceM33Descriptor*);
 
 /**
- * @brief Retrieves a string describing the color space.
- * 
  * Returns a string describing the color space.
  * 
  * @param cs Pointer to the color space object.
@@ -460,6 +431,19 @@ NCAPI const char* NcMatchLinearColorSpace(NcChromaticity redPrimary,
                                           NcChromaticity bluePrimary,
                                           NcChromaticity whitePoint,
                                           float epsilon);
+
+/**
+ * @brief Returns an Yxy coordinate on the blackbody emission spectrum
+ *
+ * Returns an Yxy coordinate on the blackbody emission spectrum for values 
+ * between 1000 and 15000K. Note that temperatures below 1900 are out of gamut
+ * for some common colorspaces, such as Rec709.
+ * 
+ *  @param temperature The blackbody temperature in Kelvin.
+ *  @param luminosity The luminosity.
+ *  @return An Yxy coordinate.
+ */
+NCAPI NcYxy NcKelvinToYxy(float temperature, float luminosity);
 
 #ifdef __cplusplus
 }
