@@ -47,7 +47,7 @@ struct NcColorSpace {
 
 static void _NcInitColorSpace(NcColorSpace* cs);
 
-static float nc_ToLinear(const NcColorSpace* cs, float t) {
+static float nc_FromLinear(const NcColorSpace* cs, float t) {
     const float gamma = cs->desc.gamma;
     if (t < cs->K0 / cs->phi)
         return t * cs->phi;
@@ -55,7 +55,7 @@ static float nc_ToLinear(const NcColorSpace* cs, float t) {
     return (1.f + a) * powf(t, 1.f / gamma) - a;
 }
 
-static float nc_FromLinear(const NcColorSpace* cs, float t) {
+static float nc_ToLinear(const NcColorSpace* cs, float t) {
     const float gamma = cs->desc.gamma;
     if (t < cs->K0)
         return t / cs->phi;
@@ -522,7 +522,7 @@ static void _NcInitColorSpace(NcColorSpace* cs) {
 }
 
 void  NcInitColorSpaceLibrary(void) {
-    for (int i = 0; i < sizeof(_colorSpaces) / sizeof(_colorSpaces[0]); i++) {
+    for (size_t i = 0; i < sizeof(_colorSpaces) / sizeof(_colorSpaces[0]); i++) {
         _NcInitColorSpace(&_colorSpaces[i]);
     }
 }
@@ -580,7 +580,7 @@ void NcFreeColorSpace(const NcColorSpace* cs) {
         return;
 
     // don't free the built in color spaces
-    for (int i = 0; i < sizeof(_colorSpaces) / sizeof(_colorSpaces[0]); i++) {
+    for (size_t i = 0; i < sizeof(_colorSpaces) / sizeof(_colorSpaces[0]); i++) {
         if (cs == &_colorSpaces[i]) {
             return;
         }
@@ -889,7 +889,7 @@ NCAPI NcXYZ NcYxyToXYZ(NcYxy Yxy) {
 const NcColorSpace* NcGetNamedColorSpace(const char* name)
 {
     if (name) {
-        for (int i = 0; i < sizeof(_colorSpaces) / sizeof(_colorSpaces[0]); i++) {
+        for (size_t i = 0; i < sizeof(_colorSpaces) / sizeof(_colorSpaces[0]); i++) {
             if (strcmp(name, _colorSpaces[i].desc.name) == 0) {
                 _NcInitColorSpace((NcColorSpace*) &_colorSpaces[i]); // ensure initialization
                 return &_colorSpaces[i];
@@ -927,7 +927,7 @@ static bool CompareCIEXYChromaticity(const NcChromaticity* a,
 const char*
 NcMatchLinearColorSpace(NcChromaticity redPrimary, NcChromaticity greenPrimary, NcChromaticity bluePrimary,
                         NcChromaticity  whitePoint, float threshold) {
-    for (int i = 0; i < sizeof(_colorSpaces) / sizeof(NcColorSpace); ++i) {
+    for (size_t i = 0; i < sizeof(_colorSpaces) / sizeof(NcColorSpace); ++i) {
         if (_colorSpaces[i].desc.gamma != 1.0f)
             continue;
         if (CompareChromaticity(&_colorSpaces[i].desc.redPrimary, &redPrimary, threshold) &&
