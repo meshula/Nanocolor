@@ -179,17 +179,8 @@ NCEXTERNC const char* Nc_srgb_texture;
 #define NcGetRGBToXYZMatrix          NCCONCAT(NCNAMESPACE, GetRGBtoXYZMatrix)
 #define NcGetXYZToRGBMatrix          NCCONCAT(NCNAMESPACE, GetXYZtoRGBMatrix)
 #define NcInitColorSpaceLibrary      NCCONCAT(NCNAMESPACE, InitColorSpaceLibrary)
-#define NcKelvinToYxy                NCCONCAT(NCNAMESPACE, KelvinToYxy)
 #define NcMatchLinearColorSpace      NCCONCAT(NCNAMESPACE, MatchLinearColorSpace)
 #define NcRegisteredColorSpaceNames  NCCONCAT(NCNAMESPACE, RegisteredColorSpaceNames)
-#define NcRGBToXYZ                   NCCONCAT(NCNAMESPACE, RGBToXYZ)
-#define NcTransformColor             NCCONCAT(NCNAMESPACE, TransformColor)
-#define NcTransformColors            NCCONCAT(NCNAMESPACE, TransformColors)
-#define NcTransformColorsWithAlpha   NCCONCAT(NCNAMESPACE, TransformColorsWithAlpha)
-#define NcXYZToRGB                   NCCONCAT(NCNAMESPACE, XYZToRGB)
-#define NcXYZToYxy                   NCCONCAT(NCNAMESPACE, XYZToYxy)
-#define NcYxyToRGB                   NCCONCAT(NCNAMESPACE, YxyToRGB)
-#define NcYxyToXYZ                   NCCONCAT(NCNAMESPACE, YxyToXYZ)
 
 /**
  * @brief Initializes the color space library.
@@ -278,83 +269,6 @@ NCAPI NcM33f NcGetXYZToRGBMatrix(const NcColorSpace* cs);
 NCAPI NcM33f NcGetRGBToRGBMatrix(const NcColorSpace* src, const NcColorSpace* dst);
 
 /**
- * Transforms a color from one color space to another.
- * 
- * @param dst Pointer to the destination color space object.
- * @param src Pointer to the source color space object.
- * @param rgb The RGB color to transform.
- * @return The transformed RGB color in the destination color space.
- */
-NCAPI NcRGB NcTransformColor(const NcColorSpace* dst, const NcColorSpace* src, NcRGB rgb);
-
-/**
- * Transforms an array of colors from one color space to another.
- * 
- * @param dst Pointer to the destination color space object.
- * @param src Pointer to the source color space object.
- * @param rgb Pointer to the array of RGB colors to transform.
- * @param count Number of colors in the array.
- * @return void
- */
-NCAPI void NcTransformColors(const NcColorSpace* dst, const NcColorSpace* src, 
-                             NcRGB* rgb, size_t count);
-
-/**
- * Transforms an array of colors with alpha channel from one color space to another.
- * 
- * @param dst Pointer to the destination color space object.
- * @param src Pointer to the source color space object.
- * @param rgba Pointer to the array of RGBA colors to transform.
- * @param count Number of colors in the array.
- * @return void
- */
-NCAPI void NcTransformColorsWithAlpha(const NcColorSpace* dst, const NcColorSpace* src,
-                                      float* rgba, size_t count);
-
-/**
- * Converts an RGB color to XYZ color space using the provided color space.
- * 
- * @param cs Pointer to the color space object.
- * @param rgb The RGB color to convert.
- * @return The XYZ color.
- */
-NCAPI NcXYZ  NcRGBToXYZ(const NcColorSpace* cs, NcRGB rgb);
-
-/**
- * Converts a XYZ color to RGB color space using the provided color space.
- * 
- * @param cs Pointer to the color space object.
- * @param xyz The XYZ color to convert.
- * @return The RGB color.
- */
-NCAPI NcRGB NcXYZToRGB(const NcColorSpace* cs, NcXYZ xyz);
-
-/**
- * Converts a XYZ color to Yxy color space.
- * 
- * @param xyz The XYZ color to convert.
- * @return The Yxy color.
-*/
-NCAPI NcYxy NcXYZToYxy(NcXYZ xyz);
-
-/**
- * Converts an Yxy color coordinate to XYZ.
- * 
- * @param Yxy The Yxy color coordinate.
- * @return The XYZ color coordinate.
- */
-NCAPI NcXYZ NcYxyToXYZ(NcYxy Yxy);
-
-/**
- * Converts an Yxy color coordinate to RGB using the specified color space.
- * 
- * @param cs The color space.
- * @param c The Yxy color coordinate.
- * @return The RGB color coordinate.
- */
-NCAPI NcRGB NcYxyToRGB(const NcColorSpace* cs, NcYxy c);
-
-/**
  * Checks if two color space objects are equal by comparing their properties.
  * 
  * @param cs1 Pointer to the first color space object.
@@ -432,19 +346,6 @@ NCAPI const char* NcMatchLinearColorSpace(NcChromaticity redPrimary,
                                           NcChromaticity bluePrimary,
                                           NcChromaticity whitePoint,
                                           float epsilon);
-
-/**
- * @brief Returns an Yxy coordinate on the blackbody emission spectrum
- *
- * Returns an Yxy coordinate on the blackbody emission spectrum for values 
- * between 1000 and 15000K. Note that temperatures below 1900 are out of gamut
- * for some common colorspaces, such as Rec709.
- * 
- *  @param temperature The blackbody temperature in Kelvin.
- *  @param luminosity The luminosity.
- *  @return An Yxy coordinate.
- */
-NCAPI NcYxy NcKelvinToYxy(float temperature, float luminosity);
 
 #ifdef __cplusplus
 }
