@@ -23,7 +23,7 @@
 //
 
 #include "nanocolor.h"
-#include "nanocolorProcess.h"
+#include "nanocolorProcessing.h"
 #include <stdbool.h>
 #include <string.h>
 #include <math.h>
