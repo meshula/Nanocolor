@@ -23,6 +23,7 @@
 //
 
 #include "nanocolorUtils.h"
+#include "nanocolorProcessing.h"
 #include <math.h>
 
 /*
