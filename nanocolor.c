@@ -821,23 +821,6 @@ void NcTransformColorsWithAlpha(const NcColorSpace* dst, const NcColorSpace* src
     }
 }
 
-NcRGB NcNormalizeLuminance(const NcColorSpace* cs, NcRGB rgb, float luminance) {
-    if (!cs)
-        return rgb;
-    
-    NcXYZ xyz = NcRGBToXYZ(cs, rgb);
-    float sum = xyz.x + xyz.y + xyz.z;
-    if (sum == 0.f)
-        return rgb;
-
-    // NcRGBtoXYZ will linearize rgb.
-    NcXYZ XYZ = NcRGBToXYZ(cs, rgb);
-    rgb.r = nc_FromLinear(cs, luminance * rgb.r / XYZ.y);
-    rgb.g = nc_FromLinear(cs, luminance * rgb.g / XYZ.y);
-    rgb.b = nc_FromLinear(cs, luminance * rgb.b / XYZ.y);
-    return rgb;
-}
-
 NcXYZ NcRGBToXYZ(const NcColorSpace* ct, NcRGB rgb) {
     if (!ct)
         return (NcXYZ) {0,0,0};
