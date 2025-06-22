@@ -32,10 +32,16 @@
 #ifdef __SSE2__
 #include <xmmintrin.h>
 #include <smmintrin.h>
+#ifndef HAVE_SSE2
+#define HAVE_SSE2 1
+#endif
 #endif
 
 #ifdef __ARM_NEON
 #include <arm_neon.h>
+#ifndef HAVE_NEON
+#define HAVE_NEON 1
+#endif
 #endif
 
 // Internal data structure to hold computed color space data, and the initial
@@ -49,19 +55,17 @@ struct NcColorSpace {
 static void _NcInitColorSpace(NcColorSpace* cs);
 
 static float nc_FromLinear(const NcColorSpace* cs, float t) {
-    const float gamma = cs->desc.gamma;
     if (t < cs->K0 / cs->phi)
         return t * cs->phi;
     const float a = cs->desc.linearBias;
-    return (1.f + a) * powf(t, 1.f / gamma) - a;
+    return (1.f + a) * powf(t, 1.f / cs->desc.gamma) - a;
 }
 
 static float nc_ToLinear(const NcColorSpace* cs, float t) {
-    const float gamma = cs->desc.gamma;
     if (t < cs->K0)
         return t / cs->phi;
     const float a = cs->desc.linearBias;
-    return powf((t + a) / (1.f + a), gamma);
+    return powf((t + a) / (1.f + a), cs->desc.gamma);
 }
 
 static const char _acescg[] = "acescg";
@@ -440,10 +444,10 @@ static NcM33f NcM33fMultiply(NcM33f lh, NcM33f rh) {
 static void _NcInitColorSpace(NcColorSpace* cs) {
     if (!cs || cs->rgbToXYZ.m[8] != 0.0)
         return;
-        
+
     const float a = cs->desc.linearBias;
     const float gamma = cs->desc.gamma;
-    
+
     if (gamma == 1.f) {
         cs->K0 = 1.e9f;
         cs->phi = 1.f;
@@ -461,30 +465,30 @@ static void _NcInitColorSpace(NcColorSpace* cs) {
                        (gamma - 1.f);
         }
     }
-    
+
     // if the primaries are zero, the cs was defined by the 3x3 matrix, don't overwrite it.
     if (cs->desc.whitePoint.x == 0.f)
         return;
-    
+
     NcM33f m;
     // To be consistent, we use SMPTE RP 177-1993
     // compute xyz [little xyz]
     float red[3]   = { cs->desc.redPrimary.x,
                        cs->desc.redPrimary.y,
                        1.f - cs->desc.redPrimary.x - cs->desc.redPrimary.y };
-    
+
     float green[3] = { cs->desc.greenPrimary.x,
                        cs->desc.greenPrimary.y,
                        1.f - cs->desc.greenPrimary.x - cs->desc.greenPrimary.y };
-    
+
     float blue[3]  = { cs->desc.bluePrimary.x,
                        cs->desc.bluePrimary.y,
                        1.f - cs->desc.bluePrimary.x - cs->desc.bluePrimary.y };
-    
+
     float white[3] = { cs->desc.whitePoint.x,
                        cs->desc.whitePoint.y,
                        1.f - cs->desc.whitePoint.x - cs->desc.whitePoint.y };
-    
+
     // Build the P matrix by column binding red, green, and blue:
     m.m[0] = red[0];
     m.m[1] = green[0];
@@ -495,11 +499,11 @@ static void _NcInitColorSpace(NcColorSpace* cs) {
     m.m[6] = red[2];
     m.m[7] = green[2];
     m.m[8] = blue[2];
-    
+
     // and W
     // white has luminance factor of 1.0, ie Y = 1
     float W[3] = { white[0] / white[1], white[1] / white[1], white[2] / white[1] };
-    
+
     // compute the coefficients to scale primaries
     NcM33f mInv = NcM3ffInvert(m);
     float C[3] = {
@@ -507,7 +511,7 @@ static void _NcInitColorSpace(NcColorSpace* cs) {
         mInv.m[3] * W[0] + mInv.m[4] * W[1] + mInv.m[5] * W[2],
         mInv.m[6] * W[0] + mInv.m[7] * W[1] + mInv.m[8] * W[2]
     };
-    
+
     // multiply the P matrix by the diagonal matrix of coefficients
     m.m[0] *= C[0];
     m.m[1] *= C[1];
@@ -518,7 +522,7 @@ static void _NcInitColorSpace(NcColorSpace* cs) {
     m.m[6] *= C[0];
     m.m[7] *= C[1];
     m.m[8] *= C[2];
-    
+
     cs->rgbToXYZ = m;
 }
 
@@ -531,7 +535,7 @@ void  NcInitColorSpaceLibrary(void) {
 const NcColorSpace* NcCreateColorSpace(const NcColorSpaceDescriptor* csd) {
     if (!csd)
         return NULL;
-    
+
     NcColorSpace* cs = (NcColorSpace*) calloc(1, sizeof(*cs));
     cs->desc = *csd;
     cs->desc.name = strdup(csd->name);
@@ -539,11 +543,11 @@ const NcColorSpace* NcCreateColorSpace(const NcColorSpaceDescriptor* csd) {
     return cs;
 }
 
-const NcColorSpace* NcCreateColorSpaceM33(const NcColorSpaceM33Descriptor* csd, 
+const NcColorSpace* NcCreateColorSpaceM33(const NcColorSpaceM33Descriptor* csd,
                                           bool* matrixIsNormalized) {
     if (!csd)
         return NULL;
-    
+
     NcColorSpace* cs = (NcColorSpace*) calloc(1, sizeof(*cs));
     cs->desc.name = strdup(csd->name);
     cs->desc.gamma = csd->gamma;
@@ -586,7 +590,7 @@ void NcFreeColorSpace(const NcColorSpace* cs) {
             return;
         }
     }
-    
+
     free((void*)cs->desc.name);
     free((void*)cs);
 }
@@ -602,23 +606,17 @@ NcM33f NcGetXYZToRGBMatrix(const NcColorSpace* cs) {
     if (!cs)
         return (NcM33f) {1,0,0, 0,1,0, 0,0,1};
 
-    return NcM3ffInvert(NcGetRGBToXYZMatrix(cs));
-}
-
-NcM33f GetRGBtoRGBMatrix(const NcColorSpace* src, const NcColorSpace* dst) {
-    NcM33f t = NcM33fMultiply(NcM3ffInvert(NcGetRGBToXYZMatrix(src)),
-                                 NcGetXYZToRGBMatrix(dst));
-    return t;
+    return NcM3ffInvert(cs->rgbToXYZ);
 }
 
 NcM33f NcGetRGBToRGBMatrix(const NcColorSpace* src, const NcColorSpace* dst) {
     if (!dst || !src) {
-        return (NcM33f){1,0,0,0,1,0,0,0,1};
+        return (NcM33f){1,0,0, 0,1,0, 0,0,1};
     }
-    
+
     NcM33f toXYZ = NcGetRGBToXYZMatrix(src);
     NcM33f fromXYZ = NcGetXYZToRGBMatrix(dst);
-    
+
     NcM33f tx = NcM33fMultiply(fromXYZ, toXYZ);
     return tx;
 }
@@ -627,10 +625,9 @@ NcRGB NcTransformColor(const NcColorSpace* dst, const NcColorSpace* src, NcRGB r
     if (!dst || !src) {
         return rgb;
     }
-    
-    NcM33f tx = NcM33fMultiply(NcGetRGBToXYZMatrix(src),
-                               NcGetXYZToRGBMatrix(dst));
-    
+
+    NcM33f tx = NcGetRGBToRGBMatrix(src, dst);
+
     // if the source color space indicates a curve remove it.
     rgb.r = nc_ToLinear(src, rgb.r);
     rgb.g = nc_ToLinear(src, rgb.g);
@@ -640,7 +637,7 @@ NcRGB NcTransformColor(const NcColorSpace* dst, const NcColorSpace* src, NcRGB r
     out.r = tx.m[0] * rgb.r + tx.m[1] * rgb.g + tx.m[2] * rgb.b;
     out.g = tx.m[3] * rgb.r + tx.m[4] * rgb.g + tx.m[5] * rgb.b;
     out.b = tx.m[6] * rgb.r + tx.m[7] * rgb.g + tx.m[8] * rgb.b;
-    
+
     // if the destination color space indicates a curve apply it.
     out.r = nc_FromLinear(dst, out.r);
     out.g = nc_FromLinear(dst, out.g);
@@ -650,12 +647,11 @@ NcRGB NcTransformColor(const NcColorSpace* dst, const NcColorSpace* src, NcRGB r
 
 void NcTransformColors(const NcColorSpace* dst, const NcColorSpace* src, NcRGB* rgb, size_t count)
 {
-    if (!dst || !src || !rgb)
+    if (!dst || !src || !rgb || count == 0)
         return;
-    
-    NcM33f tx = NcM33fMultiply(NcGetRGBToXYZMatrix(src),
-                               NcGetXYZToRGBMatrix(dst));
-    
+
+    NcM33f tx = NcGetRGBToRGBMatrix(src, dst);
+
     // if the source color space indicates a curve remove it.
     for (size_t i = 0; i < count; i++) {
         NcRGB out = rgb[i];
@@ -664,61 +660,84 @@ void NcTransformColors(const NcColorSpace* dst, const NcColorSpace* src, NcRGB* 
         out.b = nc_ToLinear(src, out.b);
         rgb[i] = out;
     }
-    
-    int start = 0;
+
+    // transform the last value separately, because _mm_storeu_ps and vst1q_f32
+    // write 4 floats at a time.
+    size_t simd_count = count >= 2 ? (count - 1) : 0;
 #if HAVE_SSE2
-    __m128 m0 = _mm_set_ps(tx.m[0], tx.m[1], tx.m[2], 0);
-    __m128 m1 = _mm_set_ps(tx.m[3], tx.m[4], tx.m[5], 0);
-    __m128 m2 = _mm_set_ps(tx.m[6], tx.m[7], tx.m[8], 0);
-    __m128 m3 = _mm_set_ps(0, 0, 0, 1);
-    
-    for (size_t i = 0; i < count - 1; i++) {
-        __m128 rgba = _mm_loadu_ps(&rgb[i].r);   // load rgbr
-        
-        // Set alpha component to 1.0 before multiplication
-        rgba = _mm_add_ps(rgba, m3);
-        
-        // Perform the matrix multiplication
-        __m128 rout = _mm_mul_ps(m0, rgba);
-        rout = _mm_add_ps(rout, _mm_mul_ps(m1, rgba));
-        rout = _mm_add_ps(rout, _mm_mul_ps(m2, rgba));
-        rout = _mm_add_ps(rout, _mm_mul_ps(m3, rgba));
-        
+    __m128 col0 = _mm_setr_ps(tx.m[0], tx.m[3], tx.m[6], 0);
+    __m128 col1 = _mm_setr_ps(tx.m[1], tx.m[4], tx.m[7], 0);
+    __m128 col2 = _mm_setr_ps(tx.m[2], tx.m[5], tx.m[8], 0);
+    __m128 col3 = _mm_setr_ps(0, 0, 0, 1);
+
+    for (size_t i = 0; i < simd_count; i++) {
+        __m128 rgbrVec = _mm_loadu_ps(&rgb[i].r);   // load rgbr
+        __m128 v0 = _mm_shuffle_ps(rgbrVec, rgbrVec, _MM_SHUFFLE(0,0,0,0));
+        __m128 v1 = _mm_shuffle_ps(rgbrVec, rgbrVec, _MM_SHUFFLE(1,1,1,1));
+        __m128 v2 = _mm_shuffle_ps(rgbrVec, rgbrVec, _MM_SHUFFLE(2,2,2,2));
+        __m128 v3 = _mm_shuffle_ps(rgbrVec, rgbrVec, _MM_SHUFFLE(3,3,3,3));
+
+        // Perform the matrix-vector multiplication
+        __m128 rout = _mm_mul_ps(col0, v0);
+        rout = _mm_add_ps(rout, _mm_mul_ps(col1, v1));
+        rout = _mm_add_ps(rout, _mm_mul_ps(col2, v2));
+        rout = _mm_add_ps(rout, _mm_mul_ps(col3, v3));
+
         // Store the result
         _mm_storeu_ps(&rgb[i].r, rout);
     }
-    
-    // transform the last value separately, because _mm_storeu_ps
-    // writes 4 floats, and we may not have 4 floats left
-    start = count - 2;
-    count = 1;
 #elif HAVE_NEON
-    float32x4_t m0 = { tx.m[0], tx.m[1], tx.m[2], 0 };
-    float32x4_t m1 = { tx.m[3], tx.m[4], tx.m[5], 0 };
-    float32x4_t m2 = { tx.m[6], tx.m[7], tx.m[8], 0 };
-    float32x4_t m3 = { 0, 0, 0, 1 };
-    
-    for (size_t i = 0; i < count - 1; i++) {
-        float32x4_t rgba = vld1q_f32(&rgb[i].r);   // load rgbr
-        
-        // Set alpha component to 1.0 before multiplication
-        rgba = vsetq_lane_f32(1.0f, rgba, 3);
-        
+    float32x4_t col0 = { tx.m[0], tx.m[3], tx.m[6], 0 };
+    float32x4_t col1 = { tx.m[1], tx.m[4], tx.m[7], 0 };
+    float32x4_t col2 = { tx.m[2], tx.m[5], tx.m[8], 0 };
+    float32x4_t col3 = { 0, 0, 0, 1 };
+
+    for (size_t i = 0; i < simd_count; i++) {
+        float32x4_t rgbrVec = vld1q_f32(&rgb[i].r);   // load rgbr
+#if 1
+    #if !defined(__aarch64__)
+        // Use vdupq_n_f32 + vgetq_lane_f32 for ARMv7/A32
+        float32x4_t v0 = vdupq_n_f32(vgetq_lane_f32(rgbrVec, 0));
+        float32x4_t v1 = vdupq_n_f32(vgetq_lane_f32(rgbrVec, 1));
+        float32x4_t v2 = vdupq_n_f32(vgetq_lane_f32(rgbrVec, 2));
+        float32x4_t v3 = vdupq_n_f32(vgetq_lane_f32(rgbrVec, 3));
+    #else
+        // Use vdupq_laneq_f32 for AArch64 (can select any lane 0-3)
+        float32x4_t v0 = vdupq_laneq_f32(rgbrVec, 0);
+        float32x4_t v1 = vdupq_laneq_f32(rgbrVec, 1);
+        float32x4_t v2 = vdupq_laneq_f32(rgbrVec, 2);
+        float32x4_t v3 = vdupq_laneq_f32(rgbrVec, 3);
+    #endif
         // Perform the matrix multiplication
-        float32x4_t rout = vmulq_f32(m0, rgba);
-        rout = vmlaq_f32(rout, m1, rgba);
-        rout = vmlaq_f32(rout, m2, rgba);
-        rout = vmlaq_f32(rout, m3, rgba);
-        
+        float32x4_t rout = vmulq_f32(col0, v0);
+        rout = vmlaq_f32(rout, col1, v1);
+        rout = vmlaq_f32(rout, col2, v2);
+        rout = vmlaq_f32(rout, col3, v3);
+#else
+    #if !defined(__aarch64__)
+        // Use vmlaq_lane_f32 for ARMv7 (can only select lane 0 or 1 of a float32x2_t)
+        float32x2_t rgbrLo = vget_low_f32(rgbrVec);
+        float32x2_t rgbrHi = vget_high_f32(rgbrVec);
+
+        float32x4_t rout = vmulq_lane_f32(col0, rgbrLo, 0); // r
+        rout = vmlaq_lane_f32(rout, col1, rgbrLo, 1);       // g
+        rout = vmlaq_lane_f32(rout, col2, rgbrHi, 0);       // b
+        rout = vmlaq_lane_f32(rout, col3, rgbrHi, 1);       // next r
+    #else
+        // Use vmlaq_laneq_f32 for AArch64 (can select any lane 0-3)
+        float32x4_t rout = vmulq_laneq_f32(col0, rgbrVec, 0);
+        rout = vmlaq_laneq_f32(rout, col1, rgbrVec, 1);
+        rout = vmlaq_laneq_f32(rout, col2, rgbrVec, 2);
+        rout = vmlaq_laneq_f32(rout, col3, rgbrVec, 3);
+    #endif
+#endif
         // Store the result
         vst1q_f32(&rgb[i].r, rout);
     }
-    // transform the last value separately, because _mm_storeu_ps
-    // writes 4 floats, and we may not have 4 floats left
-    start = count - 2;
-    count = 1;
 #else
-    for (size_t i = start; i < count; i++) {
+    simd_count = 0;
+#endif
+    for (size_t i = simd_count; i < count; i++) {
         NcRGB in = rgb[i];
         NcRGB out = {
             tx.m[0] * in.r + tx.m[1] * in.g + tx.m[2] * in.b,
@@ -727,8 +746,7 @@ void NcTransformColors(const NcColorSpace* dst, const NcColorSpace* src, NcRGB* 
         };
         rgb[i] = out;
     }
-#endif
-    
+
     // if the destination color space indicates a curve apply it.
     for (size_t i = 0; i < count; i++) {
         NcRGB out = rgb[i];
@@ -741,95 +759,105 @@ void NcTransformColors(const NcColorSpace* dst, const NcColorSpace* src, NcRGB* 
 
 // same as NcTransformColor, but preserve alpha in the transformation
 void NcTransformColorsWithAlpha(const NcColorSpace* dst, const NcColorSpace* src,
-                                float* rgba, size_t count)
+                                NcRGBA* rgba, size_t count)
 {
-    if (!dst || !src || !rgba)
+    if (!dst || !src || !rgba || count == 0)
         return;
-    
-    NcM33f tx = NcM33fMultiply(NcGetRGBToXYZMatrix(src),
-                               NcGetXYZToRGBMatrix(dst));
-    
+
+    NcM33f tx = NcGetRGBToRGBMatrix(src, dst);
+
     // if the source color space indicates a curve remove it.
     for (size_t i = 0; i < count; i++) {
-        NcRGB out = { rgba[i * 4 + 0], rgba[i * 4 + 1], rgba[i * 4 + 2] };
+        NcRGB out = rgba[i].rgb;
         out.r = nc_ToLinear(src, out.r);
         out.g = nc_ToLinear(src, out.g);
         out.b = nc_ToLinear(src, out.b);
-        rgba[i * 4 + 0] = out.r;
-        rgba[i * 4 + 1] = out.g;
-        rgba[i * 4 + 2] = out.b;
+        rgba[i].rgb = out;
     }
-    
+
 #if HAVE_SSE2
-    __m128 m0 = _mm_set_ps(tx.m[0], tx.m[1], tx.m[2], 0);
-    __m128 m1 = _mm_set_ps(tx.m[3], tx.m[4], tx.m[5], 0);
-    __m128 m2 = _mm_set_ps(tx.m[6], tx.m[7], tx.m[8], 0);
-    __m128 m3 = _mm_set_ps(0,0,0,1);
-    
-    for (size_t i = 0; i < count; i += 4) {
-        __m128 rgbaVec = _mm_loadu_ps(&rgba[i * 4]);  // Load all components (r, g, b, a)
-        
-        __m128  rout = _mm_mul_ps(m0, rgbaVec);
-        rout = _mm_add_ps(rout, _mm_mul_ps(m1, rgbaVec));
-        rout = _mm_add_ps(rout, _mm_mul_ps(m2, rgbaVec));
-        rout = _mm_add_ps(rout, _mm_mul_ps(m3, rgbaVec));
-        
-        _mm_storeu_ps(&rgba[i * 4], rout);  // Store the result
+    __m128 col0 = _mm_setr_ps(tx.m[0], tx.m[3], tx.m[6], 0);
+    __m128 col1 = _mm_setr_ps(tx.m[1], tx.m[4], tx.m[7], 0);
+    __m128 col2 = _mm_setr_ps(tx.m[2], tx.m[5], tx.m[8], 0);
+    __m128 col3 = _mm_setr_ps(0, 0, 0, 1);
+
+    for (size_t i = 0; i < count; i++) {
+        __m128 rgbaVec = _mm_loadu_ps(&rgba[i].rgb.r);  // Load all components (r, g, b, a)
+        __m128 v0 = _mm_shuffle_ps(rgbaVec, rgbaVec, _MM_SHUFFLE(0,0,0,0));
+        __m128 v1 = _mm_shuffle_ps(rgbaVec, rgbaVec, _MM_SHUFFLE(1,1,1,1));
+        __m128 v2 = _mm_shuffle_ps(rgbaVec, rgbaVec, _MM_SHUFFLE(2,2,2,2));
+        __m128 v3 = _mm_shuffle_ps(rgbaVec, rgbaVec, _MM_SHUFFLE(3,3,3,3));
+
+        // Perform the matrix-vector multiplication
+        __m128 rout = _mm_mul_ps(col0, v0);
+        rout = _mm_add_ps(rout, _mm_mul_ps(col1, v1));
+        rout = _mm_add_ps(rout, _mm_mul_ps(col2, v2));
+        rout = _mm_add_ps(rout, _mm_mul_ps(col3, v3));
+
+        _mm_storeu_ps(&rgba[i].rgb.r, rout);  // Store the result
     }
 #elif HAVE_NEON
-    float32x4x4_t matrix = {
-        {tx.m[0], tx.m[1], tx.m[2], 0},
-        {tx.m[3], tx.m[4], tx.m[5], 0},
-        {tx.m[6], tx.m[7], tx.m[8], 0},
-        {0, 0, 0, 1}
-    };
-    
-    for (size_t i = 0; i < count; i += 4) {
-        float32x4x4_t rgba_values = vld4q_f32(&rgba[i * 4]);
-        
-        float32x4_t rout = vmulq_f32(matrix.val[0], rgba_values.val[0]);
-        rout = vmlaq_f32(rout, matrix.val[1], rgba_values.val[1]);
-        rout = vmlaq_f32(rout, matrix.val[2], rgba_values.val[2]);
-        rout = vmlaq_f32(rout, matrix.val[3], rgba_values.val[3]);
-        
-        vst1q_f32(&rgba[i * 4], rout);
+    float32x4_t col0 = { tx.m[0], tx.m[3], tx.m[6], 0 };
+    float32x4_t col1 = { tx.m[1], tx.m[4], tx.m[7], 0 };
+    float32x4_t col2 = { tx.m[2], tx.m[5], tx.m[8], 0 };
+    float32x4_t col3 = { 0, 0, 0, 1 };
+
+    for (size_t i = 0; i < count; i++) {
+        float32x4_t rgbaVec = vld1q_f32(&rgba[i].rgb.r);  // Load all components (r, g, b, a)
+
+    #if !defined(__aarch64__)
+        // Use vdupq_n_f32 + vgetq_lane_f32 for ARMv7/A32
+        float32x4_t v0 = vdupq_n_f32(vgetq_lane_f32(rgbaVec, 0));
+        float32x4_t v1 = vdupq_n_f32(vgetq_lane_f32(rgbaVec, 1));
+        float32x4_t v2 = vdupq_n_f32(vgetq_lane_f32(rgbaVec, 2));
+        float32x4_t v3 = vdupq_n_f32(vgetq_lane_f32(rgbaVec, 3));
+    #else
+        // Use vdupq_laneq_f32 for AArch64 (can select any lane 0-3)
+        float32x4_t v0 = vdupq_laneq_f32(rgbaVec, 0);
+        float32x4_t v1 = vdupq_laneq_f32(rgbaVec, 1);
+        float32x4_t v2 = vdupq_laneq_f32(rgbaVec, 2);
+        float32x4_t v3 = vdupq_laneq_f32(rgbaVec, 3);
+    #endif
+        // Perform the matrix multiplication
+        float32x4_t rout = vmulq_f32(col0, v0);
+        rout = vmlaq_f32(rout, col1, v1);
+        rout = vmlaq_f32(rout, col2, v2);
+        rout = vmlaq_f32(rout, col3, v3);
+
+        vst1q_f32(&rgba[i].rgb.r, rout);  // Store the result
     }
 #else
     for (size_t i = 0; i < count; i++) {
-        NcRGB in = { rgba[i * 4 + 0], rgba[i * 4 + 1], rgba[i * 4 + 2] };
+        NcRGB in = rgba[i].rgb;
         NcRGB out = {
             tx.m[0] * in.r + tx.m[1] * in.g + tx.m[2] * in.b,
             tx.m[3] * in.r + tx.m[4] * in.g + tx.m[5] * in.b,
             tx.m[6] * in.r + tx.m[7] * in.g + tx.m[8] * in.b
         };
-        rgba[i * 4 + 0] = out.r;
-        rgba[i * 4 + 1] = out.g;
-        rgba[i * 4 + 2] = out.b;
+        rgba[i].rgb = out;
         // leave alpha alone
     }
 #endif
 
     // if the destination color space indicates a curve apply it.
     for (size_t i = 0; i < count; i++) {
-        NcRGB out = { rgba[i * 4 + 0], rgba[i * 4 + 1], rgba[i * 4 + 2] };
+        NcRGB out = rgba[i].rgb;
         out.r = nc_FromLinear(dst, out.r);
         out.g = nc_FromLinear(dst, out.g);
         out.b = nc_FromLinear(dst, out.b);
-        rgba[i * 4 + 0] = out.r;
-        rgba[i * 4 + 1] = out.g;
-        rgba[i * 4 + 2] = out.b;
+        rgba[i].rgb = out;
     }
 }
 
-NcXYZ NcRGBToXYZ(const NcColorSpace* ct, NcRGB rgb) {
-    if (!ct)
+NcXYZ NcRGBToXYZ(const NcColorSpace* cs, NcRGB rgb) {
+    if (!cs)
         return (NcXYZ) {0,0,0};
-    
-    rgb.r = nc_ToLinear(ct, rgb.r);
-    rgb.g = nc_ToLinear(ct, rgb.g);
-    rgb.b = nc_ToLinear(ct, rgb.b);
 
-    NcM33f m = NcGetRGBToXYZMatrix(ct);
+    rgb.r = nc_ToLinear(cs, rgb.r);
+    rgb.g = nc_ToLinear(cs, rgb.g);
+    rgb.b = nc_ToLinear(cs, rgb.b);
+
+    NcM33f m = NcGetRGBToXYZMatrix(cs);
     return (NcXYZ) {
         m.m[0] * rgb.r + m.m[1] * rgb.g + m.m[2] * rgb.b,
         m.m[3] * rgb.r + m.m[4] * rgb.g + m.m[5] * rgb.b,
@@ -837,21 +865,21 @@ NcXYZ NcRGBToXYZ(const NcColorSpace* ct, NcRGB rgb) {
     };
 }
 
-NcRGB NcXYZToRGB(const NcColorSpace* ct, NcXYZ xyz) {
-    if (!ct)
+NcRGB NcXYZToRGB(const NcColorSpace* cs, NcXYZ xyz) {
+    if (!cs)
         return (NcRGB) {0,0,0};
-    
-    NcM33f m = NcGetXYZToRGBMatrix(ct);
-    
+
+    NcM33f m = NcGetXYZToRGBMatrix(cs);
+
     NcRGB rgb = {
         m.m[0] * xyz.x + m.m[1] * xyz.y + m.m[2] * xyz.z,
         m.m[3] * xyz.x + m.m[4] * xyz.y + m.m[5] * xyz.z,
         m.m[6] * xyz.x + m.m[7] * xyz.y + m.m[8] * xyz.z
     };
-    
-    rgb.r = nc_FromLinear(ct, rgb.r);
-    rgb.g = nc_FromLinear(ct, rgb.g);
-    rgb.b = nc_FromLinear(ct, rgb.b);
+
+    rgb.r = nc_FromLinear(cs, rgb.r);
+    rgb.g = nc_FromLinear(cs, rgb.g);
+    rgb.b = nc_FromLinear(cs, rgb.b);
     return rgb;
 }
 
@@ -859,12 +887,12 @@ NcYxy NcXYZToYxy(NcXYZ xyz) {
     float sum = xyz.x + xyz.y + xyz.z;
     if (sum == 0.f)
         return (NcYxy) {0, 0, xyz.y};
-    
+
     return (NcYxy) {xyz.y, xyz.x / sum, xyz.y / sum};
 }
 
 NCAPI NcXYZ NcYxyToXYZ(NcYxy Yxy) {
-    return (NcXYZ) { 
+    return (NcXYZ) {
         Yxy.Y * Yxy.x / Yxy.y,
         Yxy.Y,
         Yxy.Y * (1.f - Yxy.x - Yxy.y) / Yxy.y };
@@ -880,7 +908,7 @@ const NcColorSpace* NcGetNamedColorSpace(const char* name)
             }
         }
     }
-    
+
     // currently Nanocolor doesn't have a concept of registering new color spaces
     return NULL;
 }
@@ -967,7 +995,7 @@ NcYxy _NcYuv2Yxy(NcYuvPrime c) {
     };
 }
 
-/* Equations from the paper "An Algorithm to Calculate Correlated Colour 
+/* Equations from the paper "An Algorithm to Calculate Correlated Colour
    Temperature" by M. Krystek in 1985, using a rational Chebyshev approximation.
 */
 NcYxy NcKelvinToYxy(float T, float luminance) {

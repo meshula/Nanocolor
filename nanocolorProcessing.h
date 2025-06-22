@@ -30,6 +30,7 @@ extern "C" {
 #endif
 
 // Declare the public interface using the namespacing macro.
+#define NcRGBA                       NCCONCAT(NCNAMESPACE, RGBA)
 #define NcTransformColor             NCCONCAT(NCNAMESPACE, TransformColor)
 #define NcTransformColors            NCCONCAT(NCNAMESPACE, TransformColors)
 #define NcTransformColorsWithAlpha   NCCONCAT(NCNAMESPACE, TransformColorsWithAlpha)
@@ -40,9 +41,17 @@ extern "C" {
 #define NcRGBToXYZ                   NCCONCAT(NCNAMESPACE, RGBToXYZ)
 #define NcKelvinToYxy                NCCONCAT(NCNAMESPACE, KelvinToYxy)
 
+// NcRGBA is pairing of NcRGB with an alpha channel.
+// It has no intrinsic color space, nor does it define whether the alpha
+// value is straight (unassociated) or premultiplied (associated).
+typedef struct {
+    NcRGB rgb;
+    float alpha;
+} NcRGBA;
+
 /**
  * Transforms a color from one color space to another.
- * 
+ *
  * @param dst Pointer to the destination color space object.
  * @param src Pointer to the source color space object.
  * @param rgb The RGB color to transform.
@@ -52,31 +61,31 @@ NCAPI NcRGB NcTransformColor(const NcColorSpace* dst, const NcColorSpace* src, N
 
 /**
  * Transforms an array of colors from one color space to another.
- * 
+ *
  * @param dst Pointer to the destination color space object.
  * @param src Pointer to the source color space object.
  * @param rgb Pointer to the array of RGB colors to transform.
- * @param count Number of colors in the array.
+ * @param count Number of colors in the array. (1 RGB triplet = 1 color).
  * @return void
  */
-NCAPI void NcTransformColors(const NcColorSpace* dst, const NcColorSpace* src, 
+NCAPI void NcTransformColors(const NcColorSpace* dst, const NcColorSpace* src,
                              NcRGB* rgb, size_t count);
 
 /**
  * Transforms an array of colors with alpha channel from one color space to another.
- * 
+ *
  * @param dst Pointer to the destination color space object.
  * @param src Pointer to the source color space object.
  * @param rgba Pointer to the array of RGBA colors to transform.
- * @param count Number of colors in the array.
+ * @param count Number of colors in the array. (1 RGBA quadruplet = 1 color).
  * @return void
  */
 NCAPI void NcTransformColorsWithAlpha(const NcColorSpace* dst, const NcColorSpace* src,
-                                      float* rgba, size_t count);
+                                      NcRGBA* rgba, size_t count);
 
 /**
  * Converts an RGB color to XYZ color space using the provided color space.
- * 
+ *
  * @param cs Pointer to the color space object.
  * @param rgb The RGB color to convert.
  * @return The XYZ color.
@@ -85,7 +94,7 @@ NCAPI NcXYZ  NcRGBToXYZ(const NcColorSpace* cs, NcRGB rgb);
 
 /**
  * Converts a XYZ color to RGB color space using the provided color space.
- * 
+ *
  * @param cs Pointer to the color space object.
  * @param xyz The XYZ color to convert.
  * @return The RGB color.
@@ -94,7 +103,7 @@ NCAPI NcRGB NcXYZToRGB(const NcColorSpace* cs, NcXYZ xyz);
 
 /**
  * Converts a XYZ color to Yxy color space.
- * 
+ *
  * @param xyz The XYZ color to convert.
  * @return The Yxy color.
 */
@@ -102,7 +111,7 @@ NCAPI NcYxy NcXYZToYxy(NcXYZ xyz);
 
 /**
  * Converts an Yxy color coordinate to XYZ.
- * 
+ *
  * @param Yxy The Yxy color coordinate.
  * @return The XYZ color coordinate.
  */
@@ -110,7 +119,7 @@ NCAPI NcXYZ NcYxyToXYZ(NcYxy Yxy);
 
 /**
  * Converts an Yxy color coordinate to RGB using the specified color space.
- * 
+ *
  * @param cs The color space.
  * @param c The Yxy color coordinate.
  * @return The RGB color coordinate.
@@ -120,10 +129,10 @@ NCAPI NcRGB NcYxyToRGB(const NcColorSpace* cs, NcYxy c);
 /**
  * @brief Returns an Yxy coordinate on the blackbody emission spectrum
  *
- * Returns an Yxy coordinate on the blackbody emission spectrum for values 
+ * Returns an Yxy coordinate on the blackbody emission spectrum for values
  * between 1000 and 15000K. Note that temperatures below 1900 are out of gamut
  * for some common colorspaces, such as Rec709.
- * 
+ *
  *  @param temperature The blackbody temperature in Kelvin.
  *  @param luminosity The luminosity.
  *  @return An Yxy coordinate.
