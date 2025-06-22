@@ -27,8 +27,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-// NCNAMESPACE is allows the introduction of a namespace to the symbols so that 
-// multiple libraries can include the nanocolor library without symbol 
+// NCNAMESPACE is allows the introduction of a namespace to the symbols so that
+// multiple libraries can include the nanocolor library without symbol
 // conflicts. The default is nc_1_0_ to indicate the 1.0 version of Nanocolor.
 //
 // pxr: note that the PXR namespace macros are in pxr/pxr.h which
@@ -102,7 +102,7 @@ typedef struct {
     float             linearBias; // where the linear section ends
 } NcColorSpaceDescriptor;
 
-// NcColorSpaceM33Descriptor describes a color space defined in terms of a 
+// NcColorSpaceM33Descriptor describes a color space defined in terms of a
 // 3x3 matrix, the gamma of the log section, and the linear bias.
 typedef struct {
     const char*       name;
@@ -184,31 +184,31 @@ NCEXTERNC const char* Nc_srgb_texture;
 
 /**
  * @brief Initializes the color space library.
- * 
- * Initializes the color spaces provided in the built-in color space library. 
+ *
+ * Initializes the color spaces provided in the built-in color space library.
  * This function is not thread-safe and must be called before NcGetNamedColorSpace
  * is called.
- * 
+ *
  * @return void
  */
 NCAPI void NcInitColorSpaceLibrary(void);
 
 /**
  * @brief Retrieves the names of the registered color spaces.
- * 
+ *
  * Retrieves the names of the color spaces that have been registered.
  * This function must not be called before NcInitColorSpaceLibrary is called.
- * 
+ *
  * @return Pointer to an array of strings containing the names of the registered color spaces.
  */
 NCAPI const char** NcRegisteredColorSpaceNames(void);
 
 /**
  * @brief Retrieves a named color space.
- * 
+ *
  * Retrieves a color space object based on the provided name.
  * This function must not be called before NcInitColorSpaceLibrary is called.
- * 
+ *
  * @param name The name of the color space to retrieve.
  * @return Pointer to the color space object, or NULL if not found.
  */
@@ -216,7 +216,7 @@ NCAPI const NcColorSpace* NcGetNamedColorSpace(const char* name);
 
 /**
  * Creates a color space object based on the provided color space descriptor.
- * 
+ *
  * @param cs Pointer to the color space descriptor.
  * @return Pointer to the created color space object, or NULL if creation fails.
  */
@@ -224,7 +224,7 @@ NCAPI const NcColorSpace* NcCreateColorSpace(const NcColorSpaceDescriptor* cs);
 
 /**
  * Creates a color space object based on the provided 3x3 matrix color space descriptor.
- * 
+ *
  * @param cs Pointer to the 3x3 matrix color space descriptor.
  * @return Pointer to the created color space object, or NULL if creation fails.
  */
@@ -233,11 +233,11 @@ NCAPI const NcColorSpace* NcCreateColorSpaceM33(const NcColorSpaceM33Descriptor*
 
 /**
  * @brief Frees the memory associated with a color space object.
- * 
- * Frees the memory associated with a color space object. 
+ *
+ * Frees the memory associated with a color space object.
  * If this function is called on one of the built in library color spaces, it will
  * return without freeing the memory.
- * 
+ *
  * @param cs Pointer to the color space object to be freed.
  * @return void
  */
@@ -245,7 +245,7 @@ NCAPI void NcFreeColorSpace(const NcColorSpace* cs);
 
 /**
  * Retrieves the RGB to XYZ transformation matrix for a given color space.
- * 
+ *
  * @param cs Pointer to the color space object.
  * @return The 3x3 transformation matrix.
  */
@@ -253,7 +253,7 @@ NCAPI NcM33f NcGetRGBToXYZMatrix(const NcColorSpace* cs);
 
 /**
  * Retrieves the XYZ to RGB transformation matrix for a given color space.
- * 
+ *
  * @param cs Pointer to the color space object.
  * @return The 3x3 transformation matrix.
  */
@@ -261,7 +261,7 @@ NCAPI NcM33f NcGetXYZToRGBMatrix(const NcColorSpace* cs);
 
 /**
  * Retrieves the RGB to RGB transformation matrix from source to destination color space.
- * 
+ *
  * @param src Pointer to the source color space object.
  * @param dst Pointer to the destination color space object.
  * @return The 3x3 transformation matrix.
@@ -270,7 +270,7 @@ NCAPI NcM33f NcGetRGBToRGBMatrix(const NcColorSpace* src, const NcColorSpace* ds
 
 /**
  * Checks if two color space objects are equal by comparing their properties.
- * 
+ *
  * @param cs1 Pointer to the first color space object.
  * @param cs2 Pointer to the second color space object.
  * @return True if the color space objects are equal, false otherwise.
@@ -279,12 +279,12 @@ NCAPI bool NcColorSpaceEqual(const NcColorSpace* cs1, const NcColorSpace* cs2);
 
 /**
  * @brief Retrieves the color space descriptor.
- * 
- * Returns true if the color space descriptor was filled in. Color spaces initialized 
- * using a 3x3 matrix will not fill in the values. Note that 'name' within the populated 
- * descriptor is a pointer to a string owned by the color space, and is valid only as 
+ *
+ * Returns true if the color space descriptor was filled in. Color spaces initialized
+ * using a 3x3 matrix will not fill in the values. Note that 'name' within the populated
+ * descriptor is a pointer to a string owned by the color space, and is valid only as
  * long as 'cs' is valid.
- * 
+ *
  * @param cs Pointer to the color space object.
  * @param desc Pointer to the color space descriptor to be filled in.
  * @return True if the descriptor was filled in, false otherwise.
@@ -293,12 +293,12 @@ NCAPI bool NcGetColorSpaceDescriptor(const NcColorSpace* cs, NcColorSpaceDescrip
 
 /**
  * @brief Retrieves the 3x3 matrix color space descriptor.
- * 
- * Returns true if the color space descriptor was filled in. All properly initialized 
- * color spaces will be able to fill in the values. Note that 'name' within the populated 
- * descriptor is a pointer to a string owned by the color space, and is valid only as 
+ *
+ * Returns true if the color space descriptor was filled in. All properly initialized
+ * color spaces will be able to fill in the values. Note that 'name' within the populated
+ * descriptor is a pointer to a string owned by the color space, and is valid only as
  * long as 'cs' is valid.
- * 
+ *
  * @param cs Pointer to the color space object.
  * @param desc Pointer to the 3x3 matrix color space descriptor to be filled in.
  * @return True if the descriptor was filled in, false otherwise.
@@ -307,7 +307,7 @@ NCAPI bool NcGetColorSpaceM33Descriptor(const NcColorSpace* cs, NcColorSpaceM33D
 
 /**
  * Returns a string describing the color space.
- * 
+ *
  * @param cs Pointer to the color space object.
  * @return A string describing the color space.
  */
@@ -315,11 +315,11 @@ NCAPI const char* NcGetDescription(const NcColorSpace* cs);
 
 /**
  * @brief Retrieves the K0 and phi values of the color space.
- * 
+ *
  * Retrieves the K0 and Phi values of the color space, which are used in curve
  * transformations. K0 represents the transition point in the curve function,
  * and Phi represents the slope of the linear segment before the transition.
- * 
+ *
  * @param cs Pointer to the color space object.
  * @param K0 Pointer to store the K0 value.
  * @param phi Pointer to store the phi value.
@@ -329,11 +329,11 @@ NCAPI void NcGetK0Phi(const NcColorSpace* cs, float* K0, float* phi);
 
 /**
  * @brief Matches a linear color space based on specified primaries and white point.
- * 
+ *
  * Returns a string describing the color space that best matches the specified primaries
- * and white point. A reasonable epsilon for the comparison is 1e-4 because most color 
+ * and white point. A reasonable epsilon for the comparison is 1e-4 because most color
  * spaces are defined to that precision.
- * 
+ *
  * @param redPrimary Red primary chromaticity.
  * @param greenPrimary Green primary chromaticity.
  * @param bluePrimary Blue primary chromaticity.

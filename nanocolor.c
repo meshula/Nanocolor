@@ -144,206 +144,250 @@ NCAPI const char*  NcGetDescription(const NcColorSpace* cs) {
     return cs->desc.name;
 }
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wimplicit-float-conversion"
+#elif defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:4305)
+#endif
+
 // White point chromaticities.
 #define _WpD65 { 0.3127, 0.3290 }
 #define _WpACES { 0.32168, 0.33767 }
 
 static NcColorSpace _colorSpaces[] = {
     {
-        _acescg,
-        { 0.713, 0.293 },
-        { 0.165, 0.830 },
-        { 0.128, 0.044 },
-        _WpACES,
-        1.0,
-        0.0,
+        {
+            _acescg,
+            { 0.713, 0.293 },
+            { 0.165, 0.830 },
+            { 0.128, 0.044 },
+            _WpACES,
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _adobergb,
-        { 0.64, 0.33 },
-        { 0.21, 0.71 },
-        { 0.15, 0.06 },
-        _WpD65,
-        563.0/256.0,
-        0.0,
+        {
+            _adobergb,
+            { 0.64, 0.33 },
+            { 0.21, 0.71 },
+            { 0.15, 0.06 },
+            _WpD65,
+            563.0/256.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _g18_ap1,
-        { 0.713, 0.293 },
-        { 0.165, 0.830 },
-        { 0.128, 0.044 },
-        _WpACES,
-        1.8,
-        0.0,
+        {
+            _g18_ap1,
+            { 0.713, 0.293 },
+            { 0.165, 0.830 },
+            { 0.128, 0.044 },
+            _WpACES,
+            1.8,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _g22_ap1,
-        { 0.713, 0.293 },
-        { 0.165, 0.830 },
-        { 0.128, 0.044 },
-        _WpACES,
-        2.2,
-        0.0,
+        {
+            _g22_ap1,
+            { 0.713, 0.293 },
+            { 0.165, 0.830 },
+            { 0.128, 0.044 },
+            _WpACES,
+            2.2,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _g18_rec709,
-        { 0.640, 0.330 },
-        { 0.300, 0.600 },
-        { 0.150, 0.060 },
-        _WpD65,
-        1.8,
-        0.0,
+        {
+            _g18_rec709,
+            { 0.640, 0.330 },
+            { 0.300, 0.600 },
+            { 0.150, 0.060 },
+            _WpD65,
+            1.8,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _g22_rec709,
-        { 0.640, 0.330 },
-        { 0.300, 0.600 },
-        { 0.150, 0.060 },
-        _WpD65,
-        2.2,
-        0.0,
+        {
+            _g22_rec709,
+            { 0.640, 0.330 },
+            { 0.300, 0.600 },
+            { 0.150, 0.060 },
+            _WpD65,
+            2.2,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _lin_adobergb,
-        { 0.64, 0.33 },
-        { 0.21, 0.71 },
-        { 0.15, 0.06 },
-        _WpD65,
-        1.0,
-        0.0,
+        {
+            _lin_adobergb,
+            { 0.64, 0.33 },
+            { 0.21, 0.71 },
+            { 0.15, 0.06 },
+            _WpD65,
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _lin_ap0,
-        { 0.7347, 0.2653  },
-        { 0.0000, 1.0000  },
-        { 0.0001, -0.0770 },
-        _WpACES,
-        1.0,
-        0.0,
+        {
+            _lin_ap0,
+            { 0.7347, 0.2653  },
+            { 0.0000, 1.0000  },
+            { 0.0001, -0.0770 },
+            _WpACES,
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _lin_ap1,                      // same primaries and wp as acescg
-        { 0.713, 0.293 },
-        { 0.165, 0.830 },
-        { 0.128, 0.044 },
-        _WpACES,
-        1.0,
-        0.0,
+        {
+            _lin_ap1,                      // same primaries and wp as acescg
+            { 0.713, 0.293 },
+            { 0.165, 0.830 },
+            { 0.128, 0.044 },
+            _WpACES,
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _lin_displayp3,
-        { 0.6800, 0.3200 },
-        { 0.2650, 0.6900 },
-        { 0.1500, 0.0600 },
-        _WpD65,
-        1.0,
-        0.0,
+        {
+            _lin_displayp3,
+            { 0.6800, 0.3200 },
+            { 0.2650, 0.6900 },
+            { 0.1500, 0.0600 },
+            _WpD65,
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _lin_rec709,
-        { 0.640, 0.330 },
-        { 0.300, 0.600 },
-        { 0.150, 0.060 },
-        _WpD65,
-        1.0,
-        0.0,
+        {
+            _lin_rec709,
+            { 0.640, 0.330 },
+            { 0.300, 0.600 },
+            { 0.150, 0.060 },
+            _WpD65,
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _lin_rec2020,
-        { 0.708, 0.292 },
-        { 0.170, 0.797 },
-        { 0.131, 0.046 },
-        _WpD65,
-        1.0,
-        0.0,
+        {
+            _lin_rec2020,
+            { 0.708, 0.292 },
+            { 0.170, 0.797 },
+            { 0.131, 0.046 },
+            _WpD65,
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _lin_srgb,
-        { 0.640, 0.330 },
-        { 0.300, 0.600 },
-        { 0.150, 0.060 },
-        _WpD65,
-        1.0,
-        0.0,
+        {
+            _lin_srgb,
+            { 0.640, 0.330 },
+            { 0.300, 0.600 },
+            { 0.150, 0.060 },
+            _WpD65,
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _srgb_displayp3,
-        { 0.6800, 0.3200 },
-        { 0.2650, 0.6900 },
-        { 0.1500, 0.0600 },
-        _WpD65,
-        2.4,
-        0.055,
+        {
+            _srgb_displayp3,
+            { 0.6800, 0.3200 },
+            { 0.2650, 0.6900 },
+            { 0.1500, 0.0600 },
+            _WpD65,
+            2.4,
+            0.055,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _srgb_texture,
-        { 0.640, 0.330 },
-        { 0.300, 0.600 },
-        { 0.150, 0.060 },
-        _WpD65,
-        2.4,
-        0.055,
+        {
+            _srgb_texture,
+            { 0.640, 0.330 },
+            { 0.300, 0.600 },
+            { 0.150, 0.060 },
+            _WpD65,
+            2.4,
+            0.055,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _sRGB,
-        { 0.640, 0.330 },
-        { 0.300, 0.600 },
-        { 0.150, 0.060 },
-        _WpD65,
-        2.4,
-        0.055,
+        {
+            _sRGB,
+            { 0.640, 0.330 },
+            { 0.300, 0.600 },
+            { 0.150, 0.060 },
+            _WpD65,
+            2.4,
+            0.055,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _identity,
-        { 1.0, 0.0 }, // these chromaticities generate identity
-        { 0.0, 1.0 },
-        { 0.0, 0.0 },
-        { 1.0/3.0, 1.0/3.0 },
-        1.0,
-        0.0,
+        {
+            _identity,
+            { 1.0, 0.0 }, // these chromaticities generate identity
+            { 0.0, 1.0 },
+            { 0.0, 0.0 },
+            { 1.0/3.0, 1.0/3.0 },
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _raw,
-        { 1.0, 0.0 }, // these chromaticities generate identity
-        { 0.0, 1.0 },
-        { 0.0, 0.0 },
-        { 1.0/3.0, 1.0/3.0 },
-        1.0,
-        0.0,
+        {
+            _raw,
+            { 1.0, 0.0 }, // these chromaticities generate identity
+            { 0.0, 1.0 },
+            { 0.0, 0.0 },
+            { 1.0/3.0, 1.0/3.0 },
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     }
@@ -371,7 +415,7 @@ static const char* _colorSpaceNames[] = {
     NULL
 };
 
-const char** NcRegisteredColorSpaceNames()
+const char** NcRegisteredColorSpaceNames(void)
 {
     return _colorSpaceNames;
 }
@@ -410,7 +454,7 @@ static NcM33f NcM3ffInvert(NcM33f m) {
     float det = m.m[M0] * (m.m[M4] * m.m[M8] - m.m[M5] * m.m[M7]) -
     m.m[M1] * (m.m[M3] * m.m[M8] - m.m[M5] * m.m[M6]) +
     m.m[M2] * (m.m[M3] * m.m[M7] - m.m[M4] * m.m[M6]);
-    float invdet = 1.0 / det;
+    float invdet = 1.f / det;
     inv.m[M0] = (m.m[M4] * m.m[M8] - m.m[M5] * m.m[M7]) * invdet;
     inv.m[M1] = (m.m[M2] * m.m[M7] - m.m[M1] * m.m[M8]) * invdet;
     inv.m[M2] = (m.m[M1] * m.m[M5] - m.m[M2] * m.m[M4]) * invdet;
@@ -440,10 +484,10 @@ static NcM33f NcM33fMultiply(NcM33f lh, NcM33f rh) {
 static void _NcInitColorSpace(NcColorSpace* cs) {
     if (!cs || cs->rgbToXYZ.m[8] != 0.0)
         return;
-        
+
     const float a = cs->desc.linearBias;
     const float gamma = cs->desc.gamma;
-    
+
     if (gamma == 1.f) {
         cs->K0 = 1.e9f;
         cs->phi = 1.f;
@@ -461,30 +505,30 @@ static void _NcInitColorSpace(NcColorSpace* cs) {
                        (gamma - 1.f);
         }
     }
-    
+
     // if the primaries are zero, the cs was defined by the 3x3 matrix, don't overwrite it.
     if (cs->desc.whitePoint.x == 0.f)
         return;
-    
+
     NcM33f m;
     // To be consistent, we use SMPTE RP 177-1993
     // compute xyz [little xyz]
     float red[3]   = { cs->desc.redPrimary.x,
                        cs->desc.redPrimary.y,
                        1.f - cs->desc.redPrimary.x - cs->desc.redPrimary.y };
-    
+
     float green[3] = { cs->desc.greenPrimary.x,
                        cs->desc.greenPrimary.y,
                        1.f - cs->desc.greenPrimary.x - cs->desc.greenPrimary.y };
-    
+
     float blue[3]  = { cs->desc.bluePrimary.x,
                        cs->desc.bluePrimary.y,
                        1.f - cs->desc.bluePrimary.x - cs->desc.bluePrimary.y };
-    
+
     float white[3] = { cs->desc.whitePoint.x,
                        cs->desc.whitePoint.y,
                        1.f - cs->desc.whitePoint.x - cs->desc.whitePoint.y };
-    
+
     // Build the P matrix by column binding red, green, and blue:
     m.m[0] = red[0];
     m.m[1] = green[0];
@@ -495,11 +539,11 @@ static void _NcInitColorSpace(NcColorSpace* cs) {
     m.m[6] = red[2];
     m.m[7] = green[2];
     m.m[8] = blue[2];
-    
+
     // and W
     // white has luminance factor of 1.0, ie Y = 1
     float W[3] = { white[0] / white[1], white[1] / white[1], white[2] / white[1] };
-    
+
     // compute the coefficients to scale primaries
     NcM33f mInv = NcM3ffInvert(m);
     float C[3] = {
@@ -507,7 +551,7 @@ static void _NcInitColorSpace(NcColorSpace* cs) {
         mInv.m[3] * W[0] + mInv.m[4] * W[1] + mInv.m[5] * W[2],
         mInv.m[6] * W[0] + mInv.m[7] * W[1] + mInv.m[8] * W[2]
     };
-    
+
     // multiply the P matrix by the diagonal matrix of coefficients
     m.m[0] *= C[0];
     m.m[1] *= C[1];
@@ -518,7 +562,7 @@ static void _NcInitColorSpace(NcColorSpace* cs) {
     m.m[6] *= C[0];
     m.m[7] *= C[1];
     m.m[8] *= C[2];
-    
+
     cs->rgbToXYZ = m;
 }
 
@@ -528,24 +572,35 @@ void  NcInitColorSpaceLibrary(void) {
     }
 }
 
+static char* nc_strdup(const char* s) {
+    if (!s)
+        return NULL;
+
+    size_t len = strlen(s) + 1;
+    char* copy = (char*) malloc(len);
+    if (copy)
+        memcpy(copy, s, len);
+    return copy;
+}
+
 const NcColorSpace* NcCreateColorSpace(const NcColorSpaceDescriptor* csd) {
     if (!csd)
         return NULL;
-    
+
     NcColorSpace* cs = (NcColorSpace*) calloc(1, sizeof(*cs));
     cs->desc = *csd;
-    cs->desc.name = strdup(csd->name);
+    cs->desc.name = nc_strdup(csd->name);
     _NcInitColorSpace(cs);
     return cs;
 }
 
-const NcColorSpace* NcCreateColorSpaceM33(const NcColorSpaceM33Descriptor* csd, 
+const NcColorSpace* NcCreateColorSpaceM33(const NcColorSpaceM33Descriptor* csd,
                                           bool* matrixIsNormalized) {
     if (!csd)
         return NULL;
-    
+
     NcColorSpace* cs = (NcColorSpace*) calloc(1, sizeof(*cs));
-    cs->desc.name = strdup(csd->name);
+    cs->desc.name = nc_strdup(csd->name);
     cs->desc.gamma = csd->gamma;
     cs->desc.linearBias = csd->linearBias;
     cs->rgbToXYZ = csd->rgbToXYZ;
@@ -586,7 +641,7 @@ void NcFreeColorSpace(const NcColorSpace* cs) {
             return;
         }
     }
-    
+
     free((void*)cs->desc.name);
     free((void*)cs);
 }
@@ -613,12 +668,12 @@ NcM33f GetRGBtoRGBMatrix(const NcColorSpace* src, const NcColorSpace* dst) {
 
 NcM33f NcGetRGBToRGBMatrix(const NcColorSpace* src, const NcColorSpace* dst) {
     if (!dst || !src) {
-        return (NcM33f){1,0,0,0,1,0,0,0,1};
+        return (NcM33f){1,0,0, 0,1,0, 0,0,1};
     }
-    
+
     NcM33f toXYZ = NcGetRGBToXYZMatrix(src);
     NcM33f fromXYZ = NcGetXYZToRGBMatrix(dst);
-    
+
     NcM33f tx = NcM33fMultiply(fromXYZ, toXYZ);
     return tx;
 }
@@ -627,20 +682,21 @@ NcRGB NcTransformColor(const NcColorSpace* dst, const NcColorSpace* src, NcRGB r
     if (!dst || !src) {
         return rgb;
     }
-    
+
     NcM33f tx = NcM33fMultiply(NcGetRGBToXYZMatrix(src),
                                NcGetXYZToRGBMatrix(dst));
-    
+
     // if the source color space indicates a curve remove it.
     rgb.r = nc_ToLinear(src, rgb.r);
     rgb.g = nc_ToLinear(src, rgb.g);
     rgb.b = nc_ToLinear(src, rgb.b);
 
-    NcRGB out;
-    out.r = tx.m[0] * rgb.r + tx.m[1] * rgb.g + tx.m[2] * rgb.b;
-    out.g = tx.m[3] * rgb.r + tx.m[4] * rgb.g + tx.m[5] * rgb.b;
-    out.b = tx.m[6] * rgb.r + tx.m[7] * rgb.g + tx.m[8] * rgb.b;
-    
+    NcRGB out = {
+        tx.m[0] * rgb.r + tx.m[1] * rgb.g + tx.m[2] * rgb.b,
+        tx.m[3] * rgb.r + tx.m[4] * rgb.g + tx.m[5] * rgb.b,
+        tx.m[6] * rgb.r + tx.m[7] * rgb.g + tx.m[8] * rgb.b
+    };
+
     // if the destination color space indicates a curve apply it.
     out.r = nc_FromLinear(dst, out.r);
     out.g = nc_FromLinear(dst, out.g);
@@ -652,10 +708,10 @@ void NcTransformColors(const NcColorSpace* dst, const NcColorSpace* src, NcRGB* 
 {
     if (!dst || !src || !rgb)
         return;
-    
+
     NcM33f tx = NcM33fMultiply(NcGetRGBToXYZMatrix(src),
                                NcGetXYZToRGBMatrix(dst));
-    
+
     // if the source color space indicates a curve remove it.
     for (size_t i = 0; i < count; i++) {
         NcRGB out = rgb[i];
@@ -664,30 +720,30 @@ void NcTransformColors(const NcColorSpace* dst, const NcColorSpace* src, NcRGB* 
         out.b = nc_ToLinear(src, out.b);
         rgb[i] = out;
     }
-    
+
     int start = 0;
 #if HAVE_SSE2
     __m128 m0 = _mm_set_ps(tx.m[0], tx.m[1], tx.m[2], 0);
     __m128 m1 = _mm_set_ps(tx.m[3], tx.m[4], tx.m[5], 0);
     __m128 m2 = _mm_set_ps(tx.m[6], tx.m[7], tx.m[8], 0);
     __m128 m3 = _mm_set_ps(0, 0, 0, 1);
-    
+
     for (size_t i = 0; i < count - 1; i++) {
         __m128 rgba = _mm_loadu_ps(&rgb[i].r);   // load rgbr
-        
+
         // Set alpha component to 1.0 before multiplication
         rgba = _mm_add_ps(rgba, m3);
-        
+
         // Perform the matrix multiplication
         __m128 rout = _mm_mul_ps(m0, rgba);
         rout = _mm_add_ps(rout, _mm_mul_ps(m1, rgba));
         rout = _mm_add_ps(rout, _mm_mul_ps(m2, rgba));
         rout = _mm_add_ps(rout, _mm_mul_ps(m3, rgba));
-        
+
         // Store the result
         _mm_storeu_ps(&rgb[i].r, rout);
     }
-    
+
     // transform the last value separately, because _mm_storeu_ps
     // writes 4 floats, and we may not have 4 floats left
     start = count - 2;
@@ -697,19 +753,19 @@ void NcTransformColors(const NcColorSpace* dst, const NcColorSpace* src, NcRGB* 
     float32x4_t m1 = { tx.m[3], tx.m[4], tx.m[5], 0 };
     float32x4_t m2 = { tx.m[6], tx.m[7], tx.m[8], 0 };
     float32x4_t m3 = { 0, 0, 0, 1 };
-    
+
     for (size_t i = 0; i < count - 1; i++) {
         float32x4_t rgba = vld1q_f32(&rgb[i].r);   // load rgbr
-        
+
         // Set alpha component to 1.0 before multiplication
         rgba = vsetq_lane_f32(1.0f, rgba, 3);
-        
+
         // Perform the matrix multiplication
         float32x4_t rout = vmulq_f32(m0, rgba);
         rout = vmlaq_f32(rout, m1, rgba);
         rout = vmlaq_f32(rout, m2, rgba);
         rout = vmlaq_f32(rout, m3, rgba);
-        
+
         // Store the result
         vst1q_f32(&rgb[i].r, rout);
     }
@@ -728,7 +784,7 @@ void NcTransformColors(const NcColorSpace* dst, const NcColorSpace* src, NcRGB* 
         rgb[i] = out;
     }
 #endif
-    
+
     // if the destination color space indicates a curve apply it.
     for (size_t i = 0; i < count; i++) {
         NcRGB out = rgb[i];
@@ -745,10 +801,10 @@ void NcTransformColorsWithAlpha(const NcColorSpace* dst, const NcColorSpace* src
 {
     if (!dst || !src || !rgba)
         return;
-    
+
     NcM33f tx = NcM33fMultiply(NcGetRGBToXYZMatrix(src),
                                NcGetXYZToRGBMatrix(dst));
-    
+
     // if the source color space indicates a curve remove it.
     for (size_t i = 0; i < count; i++) {
         NcRGB out = { rgba[i * 4 + 0], rgba[i * 4 + 1], rgba[i * 4 + 2] };
@@ -759,21 +815,21 @@ void NcTransformColorsWithAlpha(const NcColorSpace* dst, const NcColorSpace* src
         rgba[i * 4 + 1] = out.g;
         rgba[i * 4 + 2] = out.b;
     }
-    
+
 #if HAVE_SSE2
     __m128 m0 = _mm_set_ps(tx.m[0], tx.m[1], tx.m[2], 0);
     __m128 m1 = _mm_set_ps(tx.m[3], tx.m[4], tx.m[5], 0);
     __m128 m2 = _mm_set_ps(tx.m[6], tx.m[7], tx.m[8], 0);
     __m128 m3 = _mm_set_ps(0,0,0,1);
-    
+
     for (size_t i = 0; i < count; i += 4) {
         __m128 rgbaVec = _mm_loadu_ps(&rgba[i * 4]);  // Load all components (r, g, b, a)
-        
+
         __m128  rout = _mm_mul_ps(m0, rgbaVec);
         rout = _mm_add_ps(rout, _mm_mul_ps(m1, rgbaVec));
         rout = _mm_add_ps(rout, _mm_mul_ps(m2, rgbaVec));
         rout = _mm_add_ps(rout, _mm_mul_ps(m3, rgbaVec));
-        
+
         _mm_storeu_ps(&rgba[i * 4], rout);  // Store the result
     }
 #elif HAVE_NEON
@@ -783,15 +839,15 @@ void NcTransformColorsWithAlpha(const NcColorSpace* dst, const NcColorSpace* src
         {tx.m[6], tx.m[7], tx.m[8], 0},
         {0, 0, 0, 1}
     };
-    
+
     for (size_t i = 0; i < count; i += 4) {
         float32x4x4_t rgba_values = vld4q_f32(&rgba[i * 4]);
-        
+
         float32x4_t rout = vmulq_f32(matrix.val[0], rgba_values.val[0]);
         rout = vmlaq_f32(rout, matrix.val[1], rgba_values.val[1]);
         rout = vmlaq_f32(rout, matrix.val[2], rgba_values.val[2]);
         rout = vmlaq_f32(rout, matrix.val[3], rgba_values.val[3]);
-        
+
         vst1q_f32(&rgba[i * 4], rout);
     }
 #else
@@ -824,7 +880,7 @@ void NcTransformColorsWithAlpha(const NcColorSpace* dst, const NcColorSpace* src
 NcXYZ NcRGBToXYZ(const NcColorSpace* ct, NcRGB rgb) {
     if (!ct)
         return (NcXYZ) {0,0,0};
-    
+
     rgb.r = nc_ToLinear(ct, rgb.r);
     rgb.g = nc_ToLinear(ct, rgb.g);
     rgb.b = nc_ToLinear(ct, rgb.b);
@@ -840,15 +896,15 @@ NcXYZ NcRGBToXYZ(const NcColorSpace* ct, NcRGB rgb) {
 NcRGB NcXYZToRGB(const NcColorSpace* ct, NcXYZ xyz) {
     if (!ct)
         return (NcRGB) {0,0,0};
-    
+
     NcM33f m = NcGetXYZToRGBMatrix(ct);
-    
+
     NcRGB rgb = {
         m.m[0] * xyz.x + m.m[1] * xyz.y + m.m[2] * xyz.z,
         m.m[3] * xyz.x + m.m[4] * xyz.y + m.m[5] * xyz.z,
         m.m[6] * xyz.x + m.m[7] * xyz.y + m.m[8] * xyz.z
     };
-    
+
     rgb.r = nc_FromLinear(ct, rgb.r);
     rgb.g = nc_FromLinear(ct, rgb.g);
     rgb.b = nc_FromLinear(ct, rgb.b);
@@ -859,12 +915,12 @@ NcYxy NcXYZToYxy(NcXYZ xyz) {
     float sum = xyz.x + xyz.y + xyz.z;
     if (sum == 0.f)
         return (NcYxy) {0, 0, xyz.y};
-    
+
     return (NcYxy) {xyz.y, xyz.x / sum, xyz.y / sum};
 }
 
 NCAPI NcXYZ NcYxyToXYZ(NcYxy Yxy) {
-    return (NcXYZ) { 
+    return (NcXYZ) {
         Yxy.Y * Yxy.x / Yxy.y,
         Yxy.Y,
         Yxy.Y * (1.f - Yxy.x - Yxy.y) / Yxy.y };
@@ -880,24 +936,12 @@ const NcColorSpace* NcGetNamedColorSpace(const char* name)
             }
         }
     }
-    
+
     // currently Nanocolor doesn't have a concept of registering new color spaces
     return NULL;
 }
 
 static bool CompareChromaticity(const NcChromaticity* a, const NcChromaticity* b, float threshold) {
-    return fabsf(a->x - b->x) < threshold &&
-           fabsf(a->y - b->y) < threshold;
-}
-
-static bool CompareXYZ(const NcXYZ* a, const NcXYZ* b, float threshold) {
-    return fabsf(a->x - b->x) < threshold &&
-           fabsf(a->y - b->y) < threshold &&
-           fabsf(a->z - b->z) < threshold;
-}
-
-static bool CompareCIEXYChromaticity(const NcChromaticity* a,
-                                     const NcChromaticity* b, float threshold) {
     return fabsf(a->x - b->x) < threshold &&
            fabsf(a->y - b->y) < threshold;
 }
@@ -967,17 +1011,17 @@ NcYxy _NcYuv2Yxy(NcYuvPrime c) {
     };
 }
 
-/* Equations from the paper "An Algorithm to Calculate Correlated Colour 
+/* Equations from the paper "An Algorithm to Calculate Correlated Colour
    Temperature" by M. Krystek in 1985, using a rational Chebyshev approximation.
 */
 NcYxy NcKelvinToYxy(float T, float luminance) {
     if (T < 1000 || T > 15000)
         return (NcYxy) { 0, 0, 0 };
 
-    float u = (0.860117757 + 1.54118254e-4 * T + 1.2864121e-7 * T * T) /
-              (1.0 + 8.42420235e-4 * T + 7.08145163e-7 * T * T);
-    float v = (0.317398726 + 4.22806245e-5 * T + 4.20481691e-8 * T * T) /
-              (1.0 - 2.89741816e-5 * T + 1.61456053e-7 * T * T);
+    float u = (float) ((0.860117757 + 1.54118254e-4 * T + 1.2864121e-7 * T * T) /
+              (1.0 + 8.42420235e-4 * T + 7.08145163e-7 * T * T));
+    float v = (float) ((0.317398726 + 4.22806245e-5 * T + 4.20481691e-8 * T * T) /
+              (1.0 - 2.89741816e-5 * T + 1.61456053e-7 * T * T));
 
     return _NcYuv2Yxy((NcYuvPrime) {luminance, u, 3.f * v / 2.f });
 }
@@ -1011,3 +1055,8 @@ NcRGB NcYxyToRGB(const NcColorSpace* cs, NcYxy c) {
     return ret;
 }
 
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(_MSC_VER)
+#pragma warning(pop)
+#endif
