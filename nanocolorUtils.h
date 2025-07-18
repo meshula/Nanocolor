@@ -31,23 +31,12 @@
 extern "C" {
 #endif
 
-#define NcKelvinToYxy                NCCONCAT(NCNAMESPACE, KelvinToYxy)
 #define NcISO17321ColorChipsAP0      NCCONCAT(NCNAMESPACE, ISO17321ColorChipsAP0)
 #define NcISO17321ColorChipsNames    NCCONCAT(NCNAMESPACE, ISO17321ColorChipsNames)
 #define NcCheckerColorChipsSRGB      NCCONCAT(NCNAMESPACE, CheckerColorChipsSRGB)
 #define NcMcCamy1976ColorChipsYxy    NCCONCAT(NCNAMESPACE, McCamy1976ColorChipsYxy)
 #define NcProjectToChromaticities    NCCONCAT(NCNAMESPACE, ProjectToChromaticities)
-#define NcRGBFromYxy                 NCCONCAT(NCNAMESPACE, RGBFromYxy)
 #define NcCIE1931ColorFromWavelength NCCONCAT(NCNAMESPACE, CIE1931ColorFromWavelength)
-#define NcMatchLinearColorSpace      NCCONCAT(NCNAMESPACE, MatchLinearColorSpace)
-
-/// \brief Returns an Yxy coordinate for the blackbody emission spectrum
-///        for values between 1000 and 15000K. Note that temperatures below 1900
-///        are out of gamut for Rec709.
-/// \param temperature The blackbody temperature in Kelvin.
-/// \param luminosity The luminosity.
-/// \return An Yxy coordinate.
-NCAPI NcYxy NcKelvinToYxy(float temperature, float luminosity);
 
 /// \brief Returns the names of the 24 color chips in the ISO 17321 color charts.
 /// \return An array of const char pointers containing the names. A nullptr
@@ -74,15 +63,9 @@ NCAPI NcYxy* NcMcCamy1976ColorChipsYxy(void);
 /// \return The regularized chromaticity coordinate.
 NCAPI NcXYZ NcProjectToChromaticities(NcXYZ c);
 
-/// \brief Converts an Yxy color coordinate to RGB using the specified color space.
-/// \param cs The color space.
-/// \param c The Yxy color coordinate.
-/// \return The RGB color coordinate.
-NCAPI NcRGB NcRGBFromYxy(const NcColorSpace* cs, NcYxy c);
-
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* PXR_BASE_GF_NC_NANOCOLOR_UTILS_H */
- 
+
