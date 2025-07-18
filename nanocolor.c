@@ -148,206 +148,250 @@ NCAPI const char*  NcGetDescription(const NcColorSpace* cs) {
     return cs->desc.name;
 }
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wimplicit-float-conversion"
+#elif defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:4305)
+#endif
+
 // White point chromaticities.
 #define _WpD65 { 0.3127, 0.3290 }
 #define _WpACES { 0.32168, 0.33767 }
 
 static NcColorSpace _colorSpaces[] = {
     {
-        _acescg,
-        { 0.713, 0.293 },
-        { 0.165, 0.830 },
-        { 0.128, 0.044 },
-        _WpACES,
-        1.0,
-        0.0,
+        {
+            _acescg,
+            { 0.713, 0.293 },
+            { 0.165, 0.830 },
+            { 0.128, 0.044 },
+            _WpACES,
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _adobergb,
-        { 0.64, 0.33 },
-        { 0.21, 0.71 },
-        { 0.15, 0.06 },
-        _WpD65,
-        563.0/256.0,
-        0.0,
+        {
+            _adobergb,
+            { 0.64, 0.33 },
+            { 0.21, 0.71 },
+            { 0.15, 0.06 },
+            _WpD65,
+            563.0/256.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _g18_ap1,
-        { 0.713, 0.293 },
-        { 0.165, 0.830 },
-        { 0.128, 0.044 },
-        _WpACES,
-        1.8,
-        0.0,
+        {
+            _g18_ap1,
+            { 0.713, 0.293 },
+            { 0.165, 0.830 },
+            { 0.128, 0.044 },
+            _WpACES,
+            1.8,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _g22_ap1,
-        { 0.713, 0.293 },
-        { 0.165, 0.830 },
-        { 0.128, 0.044 },
-        _WpACES,
-        2.2,
-        0.0,
+        {
+            _g22_ap1,
+            { 0.713, 0.293 },
+            { 0.165, 0.830 },
+            { 0.128, 0.044 },
+            _WpACES,
+            2.2,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _g18_rec709,
-        { 0.640, 0.330 },
-        { 0.300, 0.600 },
-        { 0.150, 0.060 },
-        _WpD65,
-        1.8,
-        0.0,
+        {
+            _g18_rec709,
+            { 0.640, 0.330 },
+            { 0.300, 0.600 },
+            { 0.150, 0.060 },
+            _WpD65,
+            1.8,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _g22_rec709,
-        { 0.640, 0.330 },
-        { 0.300, 0.600 },
-        { 0.150, 0.060 },
-        _WpD65,
-        2.2,
-        0.0,
+        {
+            _g22_rec709,
+            { 0.640, 0.330 },
+            { 0.300, 0.600 },
+            { 0.150, 0.060 },
+            _WpD65,
+            2.2,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _lin_adobergb,
-        { 0.64, 0.33 },
-        { 0.21, 0.71 },
-        { 0.15, 0.06 },
-        _WpD65,
-        1.0,
-        0.0,
+        {
+            _lin_adobergb,
+            { 0.64, 0.33 },
+            { 0.21, 0.71 },
+            { 0.15, 0.06 },
+            _WpD65,
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _lin_ap0,
-        { 0.7347, 0.2653  },
-        { 0.0000, 1.0000  },
-        { 0.0001, -0.0770 },
-        _WpACES,
-        1.0,
-        0.0,
+        {
+            _lin_ap0,
+            { 0.7347, 0.2653  },
+            { 0.0000, 1.0000  },
+            { 0.0001, -0.0770 },
+            _WpACES,
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _lin_ap1,                      // same primaries and wp as acescg
-        { 0.713, 0.293 },
-        { 0.165, 0.830 },
-        { 0.128, 0.044 },
-        _WpACES,
-        1.0,
-        0.0,
+        {
+            _lin_ap1,                      // same primaries and wp as acescg
+            { 0.713, 0.293 },
+            { 0.165, 0.830 },
+            { 0.128, 0.044 },
+            _WpACES,
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _lin_displayp3,
-        { 0.6800, 0.3200 },
-        { 0.2650, 0.6900 },
-        { 0.1500, 0.0600 },
-        _WpD65,
-        1.0,
-        0.0,
+        {
+            _lin_displayp3,
+            { 0.6800, 0.3200 },
+            { 0.2650, 0.6900 },
+            { 0.1500, 0.0600 },
+            _WpD65,
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _lin_rec709,
-        { 0.640, 0.330 },
-        { 0.300, 0.600 },
-        { 0.150, 0.060 },
-        _WpD65,
-        1.0,
-        0.0,
+        {
+            _lin_rec709,
+            { 0.640, 0.330 },
+            { 0.300, 0.600 },
+            { 0.150, 0.060 },
+            _WpD65,
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _lin_rec2020,
-        { 0.708, 0.292 },
-        { 0.170, 0.797 },
-        { 0.131, 0.046 },
-        _WpD65,
-        1.0,
-        0.0,
+        {
+            _lin_rec2020,
+            { 0.708, 0.292 },
+            { 0.170, 0.797 },
+            { 0.131, 0.046 },
+            _WpD65,
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _lin_srgb,
-        { 0.640, 0.330 },
-        { 0.300, 0.600 },
-        { 0.150, 0.060 },
-        _WpD65,
-        1.0,
-        0.0,
+        {
+            _lin_srgb,
+            { 0.640, 0.330 },
+            { 0.300, 0.600 },
+            { 0.150, 0.060 },
+            _WpD65,
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _srgb_displayp3,
-        { 0.6800, 0.3200 },
-        { 0.2650, 0.6900 },
-        { 0.1500, 0.0600 },
-        _WpD65,
-        2.4,
-        0.055,
+        {
+            _srgb_displayp3,
+            { 0.6800, 0.3200 },
+            { 0.2650, 0.6900 },
+            { 0.1500, 0.0600 },
+            _WpD65,
+            2.4,
+            0.055,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _srgb_texture,
-        { 0.640, 0.330 },
-        { 0.300, 0.600 },
-        { 0.150, 0.060 },
-        _WpD65,
-        2.4,
-        0.055,
+        {
+            _srgb_texture,
+            { 0.640, 0.330 },
+            { 0.300, 0.600 },
+            { 0.150, 0.060 },
+            _WpD65,
+            2.4,
+            0.055,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _sRGB,
-        { 0.640, 0.330 },
-        { 0.300, 0.600 },
-        { 0.150, 0.060 },
-        _WpD65,
-        2.4,
-        0.055,
+        {
+            _sRGB,
+            { 0.640, 0.330 },
+            { 0.300, 0.600 },
+            { 0.150, 0.060 },
+            _WpD65,
+            2.4,
+            0.055,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _identity,
-        { 1.0, 0.0 }, // these chromaticities generate identity
-        { 0.0, 1.0 },
-        { 0.0, 0.0 },
-        { 1.0/3.0, 1.0/3.0 },
-        1.0,
-        0.0,
+        {
+            _identity,
+            { 1.0, 0.0 }, // these chromaticities generate identity
+            { 0.0, 1.0 },
+            { 0.0, 0.0 },
+            { 1.0/3.0, 1.0/3.0 },
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     },
     {
-        _raw,
-        { 1.0, 0.0 }, // these chromaticities generate identity
-        { 0.0, 1.0 },
-        { 0.0, 0.0 },
-        { 1.0/3.0, 1.0/3.0 },
-        1.0,
-        0.0,
+        {
+            _raw,
+            { 1.0, 0.0 }, // these chromaticities generate identity
+            { 0.0, 1.0 },
+            { 0.0, 0.0 },
+            { 1.0/3.0, 1.0/3.0 },
+            1.0,
+            0.0,
+        },
         0, 0,
         { 0,0,0, 0,0,0, 0,0,0 }
     }
@@ -375,7 +419,7 @@ static const char* _colorSpaceNames[] = {
     NULL
 };
 
-const char** NcRegisteredColorSpaceNames()
+const char** NcRegisteredColorSpaceNames(void)
 {
     return _colorSpaceNames;
 }
@@ -414,7 +458,7 @@ static NcM33f NcM3ffInvert(NcM33f m) {
     float det = m.m[M0] * (m.m[M4] * m.m[M8] - m.m[M5] * m.m[M7]) -
     m.m[M1] * (m.m[M3] * m.m[M8] - m.m[M5] * m.m[M6]) +
     m.m[M2] * (m.m[M3] * m.m[M7] - m.m[M4] * m.m[M6]);
-    float invdet = 1.0 / det;
+    float invdet = 1.f / det;
     inv.m[M0] = (m.m[M4] * m.m[M8] - m.m[M5] * m.m[M7]) * invdet;
     inv.m[M1] = (m.m[M2] * m.m[M7] - m.m[M1] * m.m[M8]) * invdet;
     inv.m[M2] = (m.m[M1] * m.m[M5] - m.m[M2] * m.m[M4]) * invdet;
@@ -532,13 +576,24 @@ void  NcInitColorSpaceLibrary(void) {
     }
 }
 
+static char* nc_strdup(const char* s) {
+    if (!s)
+        return NULL;
+
+    size_t len = strlen(s) + 1;
+    char* copy = (char*) malloc(len);
+    if (copy)
+        memcpy(copy, s, len);
+    return copy;
+}
+
 const NcColorSpace* NcCreateColorSpace(const NcColorSpaceDescriptor* csd) {
     if (!csd)
         return NULL;
 
     NcColorSpace* cs = (NcColorSpace*) calloc(1, sizeof(*cs));
     cs->desc = *csd;
-    cs->desc.name = strdup(csd->name);
+    cs->desc.name = nc_strdup(csd->name);
     _NcInitColorSpace(cs);
     return cs;
 }
@@ -549,7 +604,7 @@ const NcColorSpace* NcCreateColorSpaceM33(const NcColorSpaceM33Descriptor* csd,
         return NULL;
 
     NcColorSpace* cs = (NcColorSpace*) calloc(1, sizeof(*cs));
-    cs->desc.name = strdup(csd->name);
+    cs->desc.name = nc_strdup(csd->name);
     cs->desc.gamma = csd->gamma;
     cs->desc.linearBias = csd->linearBias;
     cs->rgbToXYZ = csd->rgbToXYZ;
@@ -633,10 +688,11 @@ NcRGB NcTransformColor(const NcColorSpace* dst, const NcColorSpace* src, NcRGB r
     rgb.g = nc_ToLinear(src, rgb.g);
     rgb.b = nc_ToLinear(src, rgb.b);
 
-    NcRGB out;
-    out.r = tx.m[0] * rgb.r + tx.m[1] * rgb.g + tx.m[2] * rgb.b;
-    out.g = tx.m[3] * rgb.r + tx.m[4] * rgb.g + tx.m[5] * rgb.b;
-    out.b = tx.m[6] * rgb.r + tx.m[7] * rgb.g + tx.m[8] * rgb.b;
+    NcRGB out = {
+        tx.m[0] * rgb.r + tx.m[1] * rgb.g + tx.m[2] * rgb.b,
+        tx.m[3] * rgb.r + tx.m[4] * rgb.g + tx.m[5] * rgb.b,
+        tx.m[6] * rgb.r + tx.m[7] * rgb.g + tx.m[8] * rgb.b
+    };
 
     // if the destination color space indicates a curve apply it.
     out.r = nc_FromLinear(dst, out.r);
@@ -918,18 +974,6 @@ static bool CompareChromaticity(const NcChromaticity* a, const NcChromaticity* b
            fabsf(a->y - b->y) < threshold;
 }
 
-static bool CompareXYZ(const NcXYZ* a, const NcXYZ* b, float threshold) {
-    return fabsf(a->x - b->x) < threshold &&
-           fabsf(a->y - b->y) < threshold &&
-           fabsf(a->z - b->z) < threshold;
-}
-
-static bool CompareCIEXYChromaticity(const NcChromaticity* a,
-                                     const NcChromaticity* b, float threshold) {
-    return fabsf(a->x - b->x) < threshold &&
-           fabsf(a->y - b->y) < threshold;
-}
-
 // The main reason this exists is that OpenEXR encodes colorspaces via primaries
 // and white point, and it would be good to be able to match an EXR file to a
 // known colorspace, rather than setting up unique transforms for each image.
@@ -1002,10 +1046,10 @@ NcYxy NcKelvinToYxy(float T, float luminance) {
     if (T < 1000 || T > 15000)
         return (NcYxy) { 0, 0, 0 };
 
-    float u = (0.860117757 + 1.54118254e-4 * T + 1.2864121e-7 * T * T) /
-              (1.0 + 8.42420235e-4 * T + 7.08145163e-7 * T * T);
-    float v = (0.317398726 + 4.22806245e-5 * T + 4.20481691e-8 * T * T) /
-              (1.0 - 2.89741816e-5 * T + 1.61456053e-7 * T * T);
+    float u = (float) ((0.860117757 + 1.54118254e-4 * T + 1.2864121e-7 * T * T) /
+              (1.0 + 8.42420235e-4 * T + 7.08145163e-7 * T * T));
+    float v = (float) ((0.317398726 + 4.22806245e-5 * T + 4.20481691e-8 * T * T) /
+              (1.0 - 2.89741816e-5 * T + 1.61456053e-7 * T * T));
 
     return _NcYuv2Yxy((NcYuvPrime) {luminance, u, 3.f * v / 2.f });
 }
@@ -1039,3 +1083,8 @@ NcRGB NcYxyToRGB(const NcColorSpace* cs, NcYxy c) {
     return ret;
 }
 
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(_MSC_VER)
+#pragma warning(pop)
+#endif
