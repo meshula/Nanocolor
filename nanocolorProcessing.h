@@ -30,6 +30,7 @@ extern "C" {
 #endif
 
 // Declare the public interface using the namespacing macro.
+#define NcRGBA                       NCCONCAT(NCNAMESPACE, RGBA)
 #define NcTransformColor             NCCONCAT(NCNAMESPACE, TransformColor)
 #define NcTransformColors            NCCONCAT(NCNAMESPACE, TransformColors)
 #define NcTransformColorsWithAlpha   NCCONCAT(NCNAMESPACE, TransformColorsWithAlpha)
@@ -39,6 +40,14 @@ extern "C" {
 #define NcYxyToXYZ                   NCCONCAT(NCNAMESPACE, YxyToXYZ)
 #define NcRGBToXYZ                   NCCONCAT(NCNAMESPACE, RGBToXYZ)
 #define NcKelvinToYxy                NCCONCAT(NCNAMESPACE, KelvinToYxy)
+
+// NcRGBA is pairing of NcRGB with an alpha channel.
+// It has no intrinsic color space, nor does it define whether the alpha
+// value is straight (unassociated) or premultiplied (associated).
+typedef struct {
+    NcRGB rgb;
+    float alpha;
+} NcRGBA;
 
 /**
  * Transforms a color from one color space to another.
@@ -56,7 +65,7 @@ NCAPI NcRGB NcTransformColor(const NcColorSpace* dst, const NcColorSpace* src, N
  * @param dst Pointer to the destination color space object.
  * @param src Pointer to the source color space object.
  * @param rgb Pointer to the array of RGB colors to transform.
- * @param count Number of colors in the array.
+ * @param count Number of colors in the array. (1 RGB triplet = 1 color).
  * @return void
  */
 NCAPI void NcTransformColors(const NcColorSpace* dst, const NcColorSpace* src,
@@ -68,11 +77,11 @@ NCAPI void NcTransformColors(const NcColorSpace* dst, const NcColorSpace* src,
  * @param dst Pointer to the destination color space object.
  * @param src Pointer to the source color space object.
  * @param rgba Pointer to the array of RGBA colors to transform.
- * @param count Number of colors in the array.
+ * @param count Number of colors in the array. (1 RGBA quadruplet = 1 color).
  * @return void
  */
 NCAPI void NcTransformColorsWithAlpha(const NcColorSpace* dst, const NcColorSpace* src,
-                                      float* rgba, size_t count);
+                                      NcRGBA* rgba, size_t count);
 
 /**
  * Converts an RGB color to XYZ color space using the provided color space.
