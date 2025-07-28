@@ -1,7 +1,6 @@
 //
 // Color Chip Generator for Nanocolor C - Implementation
 //
-
 // LICENSE: MIT License
 // Copyright (c) 2025 Nick Porcino
 // Permission is hereby granted, free of charge, to any person obtaining a copy
