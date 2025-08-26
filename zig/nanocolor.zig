@@ -1,5 +1,5 @@
 //! Nanocolor - A very small color transform library (Zig implementation)
-//!
+//! 
 //! This is a Zig implementation of the nanocolor library for color space 
 //! transformations, based on SMPTE RP177-1993 equations.
 //! 
@@ -336,7 +336,7 @@ pub const ColorSpace = struct {
                 self.phi = 1.0;
             } else {
                 self.k0 = a / (gamma - 1.0);
-                self.phi = (a / math.exp(math.log(gamma * a / (gamma + gamma * a - 1.0 - a)) * gamma)) / (gamma - 1.0);
+                self.phi = (a / math.exp(@log(gamma * a / (gamma + gamma * a - 1.0 - a)) * gamma)) / (gamma - 1.0);
             }
         }
     }
@@ -669,7 +669,9 @@ pub fn transformColor(dst: ColorSpace, src: ColorSpace, rgb: RGB) !RGB {
 
 /// Transform an array of colors from one color space to another
 pub fn transformColors(allocator: Allocator, dst: ColorSpace, src: ColorSpace, rgb_list: []const RGB) ![]RGB {
-    var result = try ArrayList(RGB).initCapacity(allocator, rgb_list.len);
+    var list = ArrayList(RGB).init(allocator);
+    try list.ensureCapacity(rgb_list.len);
+    var result = list;
     defer result.deinit();
 
     for (rgb_list) |rgb| {
@@ -686,7 +688,7 @@ pub fn rgbToXYZ(cs: ColorSpace, rgb: RGB) XYZ {
     const matrix = cs.getRGBToXYZMatrix();
     const x = matrix.m[0] * linear_rgb.r + matrix.m[1] * linear_rgb.g + matrix.m[2] * linear_rgb.b;
     const y = matrix.m[3] * linear_rgb.r + matrix.m[4] * linear_rgb.g + matrix.m[5] * linear_rgb.b;
-    const z = matrix.m[const z = matrix.m[6] * linear_rgb.r + matrix.m[7] * linear_rgb.g + matrix.m[8] * linear_rgb.b;
+    const z = matrix.m[6] * linear_rgb.r + matrix.m[7] * linear_rgb.g + matrix.m[8] * linear_rgb.b;
     return XYZ.init(x, y, z);
 }
 
@@ -993,3 +995,19 @@ pub fn main() !void {
     try runExamples(allocator);
     try performanceTest(allocator);
 }
+
+// When this file is run as a test, the test functions will be executed
+// zig test nanocolor.zig
+//
+// When this file is run as an executable, the main function will be executed
+// zig run nanocolor.zig
+//
+// To use this as a library, import it into your own Zig project
+// const nanocolor = @import("nanocolor.zig");
+//
+// Then you can use the types and functions like this:
+// var lib = nanocolor.ColorSpaceLibrary.init(allocator);
+// defer lib.deinit();
+// try lib.initColorSpaceLibrary();
+// const srgb = lib.getNamedColorSpace("sRGB") orelse return error.ColorSpaceNotFound;
+// ...
