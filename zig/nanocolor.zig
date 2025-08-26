@@ -157,7 +157,7 @@ pub const M33f = struct {
         inv.m[M4] = (self.m[M0] * self.m[M8] - self.m[M2] * self.m[M6]) * invdet;
         inv.m[M5] = (self.m[M2] * self.m[M3] - self.m[M0] * self.m[M5]) * invdet;
         inv.m[M6] = (self.m[M3] * self.m[M7] - self.m[M4] * self.m[M6]) * invdet;
-        inv.m[M7] = (self.m[M1] * self.m[M6] - self.m[M0] * self.m[M7]) * invdet;
+        inv.m[M7] = (self.m[M1] * self.m[M6] - self.m[0] * self.m[M7]) * invdet;
         inv.m[M8] = (self.m[M0] * self.m[M4] - self.m[M1] * self.m[M3]) * invdet;
         return inv;
     }
@@ -223,27 +223,32 @@ pub const ColorSpaceM33Descriptor = struct {
 
 // MARK: - Color Space Implementation
 
-/// A color space object with computed transformation matrices
-pub const ColorSpace = struct {
+/// Opaque color space object
+pub const ColorSpace = opaque {};
+
+const ColorSpaceImpl = struct {
     descriptor: ColorSpaceDescriptor,
     k0: f32,
     phi: f32,
     rgb_to_xyz: M33f,
+    allocator: Allocator,
 
     const Self = @This();
 
-    pub fn init(descriptor: ColorSpaceDescriptor) !Self {
-        var cs = Self{
+    pub fn init(allocator: Allocator, descriptor: ColorSpaceDescriptor) !*ColorSpaceImpl {
+        var cs = try allocator.create(ColorSpaceImpl);
+        cs.* = .{ 
             .descriptor = descriptor,
             .k0 = 0.0,
             .phi = 0.0,
             .rgb_to_xyz = M33f.init(),
+            .allocator = allocator,
         };
         try cs.initialize();
         return cs;
     }
 
-    pub fn initFromMatrix(descriptor: ColorSpaceM33Descriptor) Self {
+    pub fn initFromMatrix(allocator: Allocator, descriptor: ColorSpaceM33Descriptor) !*ColorSpaceImpl {
         // Create a dummy ColorSpaceDescriptor with zero white point to signal matrix init
         const dummy_desc = ColorSpaceDescriptor.init(
             descriptor.name,
@@ -254,14 +259,20 @@ pub const ColorSpace = struct {
             descriptor.gamma,
             descriptor.linear_bias,
         );
-        var cs = Self{
+        var cs = try allocator.create(ColorSpaceImpl);
+        cs.* = .{ 
             .descriptor = dummy_desc,
             .k0 = 0.0,
             .phi = 0.0,
             .rgb_to_xyz = descriptor.rgb_to_xyz,
+            .allocator = allocator,
         };
         cs.initializeTransferFunction();
         return cs;
+    }
+    
+    pub fn deinit(self: *ColorSpaceImpl) void {
+        self.allocator.destroy(self);
     }
 
     fn initialize(self: *Self) !void {
@@ -273,32 +284,32 @@ pub const ColorSpace = struct {
         }
 
         // Compute RGB to XYZ matrix using SMPTE RP 177-1993
-        const red = [3]f32{
+        const red = [3]f32{ 
             self.descriptor.red_primary.x,
             self.descriptor.red_primary.y,
-            1.0 - self.descriptor.red_primary.x - self.descriptor.red_primary.y,
+            1.0 - self.descriptor.red_primary.x - self.descriptor.red_primary.y 
         };
 
-        const green = [3]f32{
+        const green = [3]f32{ 
             self.descriptor.green_primary.x,
             self.descriptor.green_primary.y,
-            1.0 - self.descriptor.green_primary.x - self.descriptor.green_primary.y,
+            1.0 - self.descriptor.green_primary.x - self.descriptor.green_primary.y 
         };
 
-        const blue = [3]f32{
+        const blue = [3]f32{ 
             self.descriptor.blue_primary.x,
             self.descriptor.blue_primary.y,
-            1.0 - self.descriptor.blue_primary.x - self.descriptor.blue_primary.y,
+            1.0 - self.descriptor.blue_primary.x - self.descriptor.blue_primary.y 
         };
 
-        const white = [3]f32{
+        const white = [3]f32{ 
             self.descriptor.white_point.x,
             self.descriptor.white_point.y,
-            1.0 - self.descriptor.white_point.x - self.descriptor.white_point.y,
+            1.0 - self.descriptor.white_point.x - self.descriptor.white_point.y 
         };
 
         // Build the P matrix by column binding red, green, and blue
-        const p = M33f.initFromArray([9]f32{
+        const p = M33f.initFromArray([9]f32{ 
             red[0],   green[0], blue[0],
             red[1],   green[1], blue[1],
             red[2],   green[2], blue[2],
@@ -309,14 +320,14 @@ pub const ColorSpace = struct {
 
         // Compute coefficients to scale primaries
         const p_inv = try p.invert();
-        const C = [3]f32{
+        const C = [3]f32{ 
             p_inv.m[0] * W[0] + p_inv.m[1] * W[1] + p_inv.m[2] * W[2],
             p_inv.m[3] * W[0] + p_inv.m[4] * W[1] + p_inv.m[5] * W[2],
             p_inv.m[6] * W[0] + p_inv.m[7] * W[1] + p_inv.m[8] * W[2],
         };
 
         // Multiply P matrix by diagonal matrix of coefficients
-        self.rgb_to_xyz = M33f.initFromArray([9]f32{
+        self.rgb_to_xyz = M33f.initFromArray([9]f32{ 
             p.m[0] * C[0], p.m[1] * C[1], p.m[2] * C[2],
             p.m[3] * C[0], p.m[4] * C[1], p.m[5] * C[2],
             p.m[6] * C[0], p.m[7] * C[1], p.m[8] * C[2],
@@ -342,7 +353,7 @@ pub const ColorSpace = struct {
     }
 
     /// Apply transfer function to convert from linear value
-    pub fn fromLinear(self: Self, t: f32) f32 {
+    pub fn fromLinear(self: *const Self, t: f32) f32 {
         if (t < self.k0 / self.phi) {
             return t * self.phi;
         }
@@ -351,7 +362,7 @@ pub const ColorSpace = struct {
     }
 
     /// Apply inverse transfer function to convert to linear value
-    pub fn toLinear(self: Self, t: f32) f32 {
+    pub fn toLinear(self: *const Self, t: f32) f32 {
         if (t < self.k0) {
             return t / self.phi;
         }
@@ -360,29 +371,29 @@ pub const ColorSpace = struct {
     }
 
     /// Get the RGB to XYZ transformation matrix
-    pub fn getRGBToXYZMatrix(self: Self) M33f {
+    pub fn getRGBToXYZMatrix(self: *const Self) M33f {
         return self.rgb_to_xyz;
     }
 
     /// Get the XYZ to RGB transformation matrix
-    pub fn getXYZToRGBMatrix(self: Self) !M33f {
+    pub fn getXYZToRGBMatrix(self: *const Self) !M33f {
         return self.rgb_to_xyz.invert();
     }
 
     /// Get the RGB to RGB transformation matrix to another color space
-    pub fn getRGBToRGBMatrix(self: Self, dst: Self) !M33f {
+    pub fn getRGBToRGBMatrix(self: *const Self, dst: *const Self) !M33f {
         const dst_xyz_to_rgb = try dst.getXYZToRGBMatrix();
         return dst_xyz_to_rgb.multiply(self.rgb_to_xyz);
     }
 
     /// Get K0 and phi values for the color space
-    pub fn getK0Phi(self: Self) struct { k0: f32, phi: f32 } {
+    pub fn getK0Phi(self: *const Self) struct { k0: f32, phi: f32 } {
         return .{ .k0 = self.k0, .phi = self.phi };
     }
 
-    pub fn eql(self: Self, other: Self) bool {
-        return std.mem.eql(u8, self.descriptor.name, other.descriptor.name) and
-            self.descriptor.gamma == other.descriptor.gamma and
+    pub fn eql(self: *const Self, other: *const Self) bool {
+        return std.mem.eql(u8, self.descriptor.name, other.descriptor.name) and 
+            self.descriptor.gamma == other.descriptor.gamma and 
             self.descriptor.linear_bias == other.descriptor.linear_bias;
     }
 };
@@ -582,7 +593,7 @@ pub const ColorSpaces = struct {
 
 /// Global color space library
 pub const ColorSpaceLibrary = struct {
-    const ColorSpaceMap = std.HashMap([]const u8, ColorSpace, std.hash_map.StringContext, std.hash_map.default_max_load_percentage);
+    const ColorSpaceMap = std.HashMap([]const u8, *ColorSpaceImpl, std.hash_map.StringContext, std.hash_map.default_max_load_percentage);
 
     color_spaces: ColorSpaceMap,
     allocator: Allocator,
@@ -590,13 +601,17 @@ pub const ColorSpaceLibrary = struct {
     const Self = @This();
 
     pub fn init(allocator: Allocator) Self {
-        return Self{
+        return Self{ 
             .color_spaces = ColorSpaceMap.init(allocator),
             .allocator = allocator,
         };
     }
 
     pub fn deinit(self: *Self) void {
+        var iterator = self.color_spaces.valueIterator();
+        while (iterator.next()) |cs| {
+            cs.*.deinit();
+        }
         self.color_spaces.deinit();
     }
 
@@ -613,7 +628,7 @@ pub const ColorSpaceLibrary = struct {
         };
 
         for (predefined_spaces) |descriptor| {
-            const cs = try ColorSpace.init(descriptor);
+            const cs = try ColorSpaceImpl.init(self.allocator, descriptor);
             try self.color_spaces.put(descriptor.name, cs);
         }
     }
@@ -632,46 +647,59 @@ pub const ColorSpaceLibrary = struct {
     }
 
     /// Get a color space by name
-    pub fn getNamedColorSpace(self: Self, name: []const u8) ?ColorSpace {
-        return self.color_spaces.get(name);
-    }
-
-    /// Create a custom color space from a descriptor
-    pub fn createColorSpace(descriptor: ColorSpaceDescriptor) !ColorSpace {
-        return ColorSpace.init(descriptor);
-    }
-
-    /// Create a custom color space from a matrix descriptor
-    pub fn createColorSpaceM33(descriptor: ColorSpaceM33Descriptor) ColorSpace {
-        return ColorSpace.initFromMatrix(descriptor);
+    pub fn getNamedColorSpace(self: Self, name: []const u8) ?*ColorSpace {
+        const cs = self.color_spaces.get(name);
+        if (cs) |c| {
+            return @ptrCast(c);
+        }
+        return null;
     }
 };
+
+/// Create a custom color space from a descriptor
+pub fn createColorSpace(allocator: Allocator, descriptor: ColorSpaceDescriptor) !*ColorSpace {
+    const cs = try ColorSpaceImpl.init(allocator, descriptor);
+    return @ptrCast(cs);
+}
+
+/// Create a custom color space from a matrix descriptor
+pub fn createColorSpaceM33(allocator: Allocator, descriptor: ColorSpaceM33Descriptor) !*ColorSpace {
+    const cs = try ColorSpaceImpl.initFromMatrix(allocator, descriptor);
+    return @ptrCast(cs);
+}
+
+/// Destroy a custom color space
+pub fn destroyColorSpace(cs: *ColorSpace) void {
+    const impl = @as(*ColorSpaceImpl, @ptrCast(cs));
+    impl.deinit();
+}
 
 // MARK: - Color Transformation Functions
 
 /// Transform a color from one color space to another
-pub fn transformColor(dst: ColorSpace, src: ColorSpace, rgb: RGB) !RGB {
+pub fn transformColor(dst: *const ColorSpace, src: *const ColorSpace, rgb: RGB) !RGB {
+    const src_impl = @as(*ColorSpaceImpl, @alignCast(@constCast(@ptrCast(src))));
+    const dst_impl = @as(*ColorSpaceImpl, @alignCast(@constCast(@ptrCast(dst))));
+
     // Convert to linear in source space
-    const linear_rgb = RGB.init(src.toLinear(rgb.r), src.toLinear(rgb.g), src.toLinear(rgb.b));
+    const linear_rgb = RGB.init(src_impl.toLinear(rgb.r), src_impl.toLinear(rgb.g), src_impl.toLinear(rgb.b));
 
     // Transform to destination color space via XYZ
-    const dst_xyz_to_rgb = try dst.getXYZToRGBMatrix();
-    const transformation_matrix = dst_xyz_to_rgb.multiply(src.getRGBToXYZMatrix());
+    const dst_xyz_to_rgb = try dst_impl.getXYZToRGBMatrix();
+    const transformation_matrix = dst_xyz_to_rgb.multiply(src_impl.getRGBToXYZMatrix());
     const transformed_linear = transformation_matrix.transformRGB(linear_rgb);
 
     // Apply destination transfer function
     return RGB.init(
-        dst.fromLinear(transformed_linear.r),
-        dst.fromLinear(transformed_linear.g),
-        dst.fromLinear(transformed_linear.b),
+        dst_impl.fromLinear(transformed_linear.r),
+        dst_impl.fromLinear(transformed_linear.g),
+        dst_impl.fromLinear(transformed_linear.b),
     );
 }
 
 /// Transform an array of colors from one color space to another
-pub fn transformColors(allocator: Allocator, dst: ColorSpace, src: ColorSpace, rgb_list: []const RGB) ![]RGB {
-    var list = ArrayList(RGB).init(allocator);
-    try list.ensureCapacity(rgb_list.len);
-    var result = list;
+pub fn transformColors(allocator: Allocator, dst: *const ColorSpace, src: *const ColorSpace, rgb_list: []const RGB) ![]RGB {
+    var result = try std.ArrayList(RGB).initCapacity(allocator, rgb_list.len);
     defer result.deinit();
 
     for (rgb_list) |rgb| {
@@ -683,9 +711,10 @@ pub fn transformColors(allocator: Allocator, dst: ColorSpace, src: ColorSpace, r
 }
 
 /// Convert RGB to XYZ using the given color space
-pub fn rgbToXYZ(cs: ColorSpace, rgb: RGB) XYZ {
-    const linear_rgb = RGB.init(cs.toLinear(rgb.r), cs.toLinear(rgb.g), cs.toLinear(rgb.b));
-    const matrix = cs.getRGBToXYZMatrix();
+pub fn rgbToXYZ(cs: *const ColorSpace, rgb: RGB) XYZ {
+    const impl = @as(*ColorSpaceImpl, @alignCast(@constCast(@ptrCast(cs))));
+    const linear_rgb = RGB.init(impl.toLinear(rgb.r), impl.toLinear(rgb.g), impl.toLinear(rgb.b));
+    const matrix = impl.getRGBToXYZMatrix();
     const x = matrix.m[0] * linear_rgb.r + matrix.m[1] * linear_rgb.g + matrix.m[2] * linear_rgb.b;
     const y = matrix.m[3] * linear_rgb.r + matrix.m[4] * linear_rgb.g + matrix.m[5] * linear_rgb.b;
     const z = matrix.m[6] * linear_rgb.r + matrix.m[7] * linear_rgb.g + matrix.m[8] * linear_rgb.b;
@@ -693,12 +722,13 @@ pub fn rgbToXYZ(cs: ColorSpace, rgb: RGB) XYZ {
 }
 
 /// Convert XYZ to RGB using the given color space
-pub fn xyzToRGB(cs: ColorSpace, xyz: XYZ) !RGB {
-    const matrix = try cs.getXYZToRGBMatrix();
+pub fn xyzToRGB(cs: *const ColorSpace, xyz: XYZ) !RGB {
+    const impl = @as(*ColorSpaceImpl, @alignCast(@constCast(@ptrCast(cs))));
+    const matrix = try impl.getXYZToRGBMatrix();
     const linear_r = matrix.m[0] * xyz.x + matrix.m[1] * xyz.y + matrix.m[2] * xyz.z;
     const linear_g = matrix.m[3] * xyz.x + matrix.m[4] * xyz.y + matrix.m[5] * xyz.z;
     const linear_b = matrix.m[6] * xyz.x + matrix.m[7] * xyz.y + matrix.m[8] * xyz.z;
-    return RGB.init(cs.fromLinear(linear_r), cs.fromLinear(linear_g), cs.fromLinear(linear_b));
+    return RGB.init(impl.fromLinear(linear_r), impl.fromLinear(linear_g), impl.fromLinear(linear_b));
 }
 
 /// Convert XYZ to Yxy
@@ -721,7 +751,7 @@ pub fn yxyToXYZ(yxy: Yxy) XYZ {
 }
 
 /// Convert Yxy to RGB using the given color space
-pub fn yxyToRGB(cs: ColorSpace, yxy: Yxy) !RGB {
+pub fn yxyToRGB(cs: *const ColorSpace, yxy: Yxy) !RGB {
     const xyz = yxyToXYZ(yxy);
     return xyzToRGB(cs, xyz);
 }
@@ -824,15 +854,25 @@ test "matrix inversion" {
 }
 
 test "color space creation" {
-    const srgb = try ColorSpace.init(ColorSpaces.sRGB);
-    try testing.expect(std.mem.eql(u8, srgb.descriptor.name, "sRGB"));
-    try testing.expectEqual(@as(f32, 2.4), srgb.descriptor.gamma);
-    try testing.expectEqual(@as(f32, 0.055), srgb.descriptor.linear_bias);
+    const srgb_cs = try ColorSpaceImpl.init(testing.allocator, ColorSpaces.sRGB);
+    defer srgb_cs.deinit();
+    
+    const srgb = @as(*ColorSpace, @alignCast(@constCast(@ptrCast(srgb_cs))));
+    const srgb_impl = @as(*const ColorSpaceImpl, @alignCast(@constCast(@ptrCast(srgb))));
+
+    try testing.expect(std.mem.eql(u8, srgb_impl.descriptor.name, "sRGB"));
+    try testing.expectEqual(@as(f32, 2.4), srgb_impl.descriptor.gamma);
+    try testing.expectEqual(@as(f32, 0.055), srgb_impl.descriptor.linear_bias);
 }
 
 test "color transformation" {
-    const srgb = try ColorSpace.init(ColorSpaces.sRGB);
-    const lin_srgb = try ColorSpace.init(ColorSpaces.lin_srgb);
+    const srgb_cs = try ColorSpaceImpl.init(testing.allocator, ColorSpaces.sRGB);
+    defer srgb_cs.deinit();
+    const srgb = @as(*ColorSpace, @ptrCast(srgb_cs)); 
+
+    const lin_srgb_cs = try ColorSpaceImpl.init(testing.allocator, ColorSpaces.lin_srgb);
+    defer lin_srgb_cs.deinit();
+    const lin_srgb = @as(*ColorSpace, @ptrCast(lin_srgb_cs));
 
     const test_color = RGB.init(0.5, 0.5, 0.5); // Mid-gray in sRGB
     const linear_color = try transformColor(lin_srgb, srgb, test_color);
@@ -851,7 +891,10 @@ test "color transformation" {
 }
 
 test "xyz conversion" {
-    const srgb = try ColorSpace.init(ColorSpaces.sRGB);
+    const srgb_cs = try ColorSpaceImpl.init(testing.allocator, ColorSpaces.sRGB);
+    defer srgb_cs.deinit();
+    const srgb = @as(*ColorSpace, @ptrCast(srgb_cs)); 
+
     const test_color = RGB.init(1.0, 0.0, 0.0); // Pure red
     const xyz = rgbToXYZ(srgb, test_color);
 
@@ -898,7 +941,8 @@ test "color space library" {
     try testing.expect(srgb_opt != null);
 
     const srgb = srgb_opt.?;
-    try testing.expect(std.mem.eql(u8, srgb.descriptor.name, "sRGB"));
+    const srgb_impl = @as(*const ColorSpaceImpl, @alignCast(@constCast(@ptrCast(srgb))));
+    try testing.expect(std.mem.eql(u8, srgb_impl.descriptor.name, "sRGB"));
 }
 
 test "linear color space matching" {
