@@ -21,8 +21,8 @@
 // KIND, either express or implied. See the Apache License for the specific
 // language governing permissions and limitations under the Apache License.
 //
-#ifndef PXR_BASE_GF_NC_NANOCOLOR_H
-#define PXR_BASE_GF_NC_NANOCOLOR_H
+#ifndef NANOCOLOR_H
+#define NANOCOLOR_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -35,7 +35,7 @@
 // is a C++ only header; so the generated namespace prefixes can't be
 // used here.
 #ifndef NCNAMESPACE
-#define NCNAMESPACE pxr_nc_1_0_
+#define NCNAMESPACE nc_ref_
 #endif
 
 // The NCCONCAT macro is used to apply a namespace to the symbols in the public

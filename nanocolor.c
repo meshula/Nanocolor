@@ -933,6 +933,18 @@ const NcColorSpace* NcGetNamedColorSpace(const char* name)
     return NULL;
 }
 
+const char** NcRegisteredColorSpaceNames() {
+    const int sz = sizeof(_colorSpaces) / sizeof(_colorSpaces[0]);
+    static const char** namePointers = NULL;
+    if (!namePointers) {
+        namePointers = (const char**) malloc(sz * sizeof(char*));
+        for (size_t i = 0; i < sz; i++) {
+            namePointers[i] = strdup(_colorSpaces[i].desc.shortName);
+        }
+    }
+    return namePointers;
+}
+
 static bool _CompareChromaticity(const NcChromaticity* a, const NcChromaticity* b, float threshold) {
     return fabsf(a->x - b->x) < threshold &&
            fabsf(a->y - b->y) < threshold;
