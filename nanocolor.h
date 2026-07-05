@@ -196,6 +196,7 @@ found in documents naming color spaces.
 #define NcXYZToYxy                   NCCONCAT(NCNAMESPACE, XYZToYxy)
 #define NcYxyToRGB                   NCCONCAT(NCNAMESPACE, YxyToRGB)
 #define NcYxyToXYZ                   NCCONCAT(NCNAMESPACE, YxyToXYZ)
+#define NcRegisteredColorSpaceNames  NCCONCAT(NCNAMESPACE, RegisteredColorSpaceNames)
 
 // Reference implementations for testing purposes.
 #define NcTransformColorsRef            NCCONCAT(NCNAMESPACE, TransformColorsRef)
