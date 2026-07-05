@@ -24,7 +24,11 @@ add_library(nanocolor
 
 set_target_properties(nanocolor PROPERTIES
     C_STANDARD 11
-    C_STANDARD_REQUIRED ON)
+    C_STANDARD_REQUIRED ON
+    # Allow the static build to be linked into a shared library (e.g. a
+    # consumer's SHARED target). No-op on macOS where PIC is the default;
+    # required for the STATIC-into-SHARED case on Linux.
+    POSITION_INDEPENDENT_CODE ON)
 
 # Declare the install include dir exactly once (here, not via
 # install(... INCLUDES DESTINATION)) to avoid a duplicated include interface.
