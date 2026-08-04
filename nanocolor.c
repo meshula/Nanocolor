@@ -623,8 +623,8 @@ void NcTransformColorsRef(const NcColorSpace* dst, const NcColorSpace* src, NcRG
 }
 
 // same as NcTransformColor, but preserve alpha in the transformation
-void NcTransformColorsWithAlphRef(const NcColorSpace* dst, const NcColorSpace* src,
-                                  NcRGBA* rgba, size_t count)
+void NcTransformColorsWithAlphaRef(const NcColorSpace* dst, const NcColorSpace* src,
+                                   NcRGBA* rgba, size_t count)
 {
     if (!dst || !src || !rgba || count == 0)
         return;
