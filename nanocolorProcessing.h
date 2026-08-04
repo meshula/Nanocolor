@@ -30,7 +30,6 @@ extern "C" {
 #endif
 
 // Declare the public interface using the namespacing macro.
-#define NcRGBA                       NCCONCAT(NCNAMESPACE, RGBA)
 #define NcTransformColor             NCCONCAT(NCNAMESPACE, TransformColor)
 #define NcTransformColors            NCCONCAT(NCNAMESPACE, TransformColors)
 #define NcTransformColorsWithAlpha   NCCONCAT(NCNAMESPACE, TransformColorsWithAlpha)
@@ -40,14 +39,6 @@ extern "C" {
 #define NcYxyToXYZ                   NCCONCAT(NCNAMESPACE, YxyToXYZ)
 #define NcRGBToXYZ                   NCCONCAT(NCNAMESPACE, RGBToXYZ)
 #define NcKelvinToYxy                NCCONCAT(NCNAMESPACE, KelvinToYxy)
-
-// NcRGBA is pairing of NcRGB with an alpha channel.
-// It has no intrinsic color space, nor does it define whether the alpha
-// value is straight (unassociated) or premultiplied (associated).
-typedef struct {
-    NcRGB rgb;
-    float alpha;
-} NcRGBA;
 
 /**
  * Transforms a color from one color space to another.

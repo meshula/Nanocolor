@@ -105,7 +105,7 @@ might be used by test programs and the like. It is an optional
 component, and you may choose to omit it from your project.
 
 ```c
-NcXYZ NcKelvinToYxy(float temperature, float luminosity);
+NcYxy NcKelvinToYxy(float temperature, float luminosity);
 NcRGB* NcISO17321_AP0_ColorChips();
 NcXYZ NcProjectToChromaticities(NcXYZ c);
 NcXYZ NcNormalizeXYZ(NcXYZ c);
