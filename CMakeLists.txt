@@ -15,6 +15,15 @@ set(nanocolor_PUBLIC_HEADERS
 file(COPY ${nanocolor_PUBLIC_HEADERS}
      DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/include/nanocolor)
 
+# Clang module map and API notes for Swift targets that
+# link against Lab::nanocolor and `import Nanocolor`.
+set(nanocolor_SWIFT_MODULE_FILES
+    swift/module.modulemap
+    swift/Nanocolor.apinotes)
+
+file(COPY ${nanocolor_SWIFT_MODULE_FILES}
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/include/nanocolor/swift)
+
 # No explicit STATIC/SHARED: honors BUILD_SHARED_LIBS, defaults to STATIC.
 # SIMD paths in the sources self-guard on __SSE2__/__ARM_NEON, so no arch flags.
 add_library(nanocolor
@@ -36,6 +45,8 @@ target_include_directories(nanocolor
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+        $<BUILD_INTERFACE:$<$<COMPILE_LANGUAGE:Swift>:${CMAKE_CURRENT_BINARY_DIR}/include/nanocolor/swift>>
+        $<INSTALL_INTERFACE:$<$<COMPILE_LANGUAGE:Swift>:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/nanocolor/swift>>
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -54,6 +65,9 @@ install(TARGETS nanocolor
 
 install(FILES ${nanocolor_PUBLIC_HEADERS}
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/nanocolor)
+
+install(FILES ${nanocolor_SWIFT_MODULE_FILES}
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/nanocolor/swift)
 
 install(EXPORT nanocolorTargets
     NAMESPACE Lab::
