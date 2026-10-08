@@ -11,7 +11,7 @@ let package = Package(
       name: "Nanocolor",
       path: ".",
       sources: ["nanocolor.c", "nanocolorUtils.c"],
-      publicHeadersPath: "swift"
+      publicHeadersPath: "swift/include"
     ),
 
     .testTarget(
