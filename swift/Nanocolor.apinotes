@@ -1,0 +1,113 @@
+Name: Nanocolor
+
+Tags:
+- Name: nc_ref_Chromaticity
+  SwiftName: Chromaticity
+- Name: nc_ref_XYZ
+  SwiftName: XYZ
+- Name: nc_ref_Yxy
+  SwiftName: Yxy
+- Name: nc_ref_RGB
+  SwiftName: RGB
+- Name: nc_ref_RGBA
+  SwiftName: RGBA
+- Name: nc_ref_M33f
+  SwiftName: M33f
+- Name: nc_ref_ColorSpaceDescriptor
+  SwiftName: ColorSpaceDescriptor
+- Name: nc_ref_ColorSpaceM33Descriptor
+  SwiftName: ColorSpaceM33Descriptor
+
+Functions:
+- Name: nc_ref_InitColorSpaceLibrary
+  SwiftName: initColorSpaceLibrary()
+- Name: nc_ref_RegisteredColorSpaceNames
+  SwiftName: registeredColorSpaceNames()
+  NullabilityOfRet: N
+- Name: nc_ref_GetNamedColorSpace
+  SwiftName: namedColorSpace(_:)
+  Nullability: [N]
+  NullabilityOfRet: O
+- Name: nc_ref_CreateColorSpace
+  SwiftName: createColorSpace(_:)
+  Nullability: [N]
+  NullabilityOfRet: O
+- Name: nc_ref_CreateColorSpaceM33
+  SwiftName: createColorSpace(_:matrixIsNormalized:)
+  Nullability: [N, O]
+  NullabilityOfRet: O
+- Name: nc_ref_FreeColorSpace
+  SwiftName: freeColorSpace(_:)
+  Nullability: [O]
+- Name: nc_ref_GetRGBtoXYZMatrix
+  SwiftName: rgbToXYZMatrix(_:)
+  Nullability: [N]
+- Name: nc_ref_GetXYZtoRGBMatrix
+  SwiftName: xyzToRGBMatrix(_:)
+  Nullability: [N]
+- Name: nc_ref_GetRGBToRGBMatrix
+  SwiftName: rgbToRGBMatrix(from:to:)
+  Nullability: [N, N]
+- Name: nc_ref_TransformColor
+  SwiftName: transformColor(to:from:_:)
+  Nullability: [N, N]
+- Name: nc_ref_TransformColors
+  SwiftName: transformColors(to:from:_:count:)
+  Nullability: [N, N, N]
+- Name: nc_ref_TransformColorsRef
+  SwiftName: transformColorsRef(to:from:_:count:)
+  Nullability: [N, N, N]
+- Name: nc_ref_TransformColorsWithAlpha
+  SwiftName: transformColors(to:from:_:count:)
+  Nullability: [N, N, N]
+- Name: nc_ref_TransformColorsWithAlphaRef
+  SwiftName: transformColorsRef(to:from:_:count:)
+  Nullability: [N, N, N]
+- Name: nc_ref_RGBToXYZ
+  SwiftName: rgbToXYZ(in:_:)
+  Nullability: [N]
+- Name: nc_ref_XYZToRGB
+  SwiftName: xyzToRGB(in:_:)
+  Nullability: [N]
+- Name: nc_ref_YxyToRGB
+  SwiftName: yxyToRGB(in:_:)
+  Nullability: [N]
+- Name: nc_ref_XYZToYxy
+  SwiftName: xyzToYxy(_:)
+- Name: nc_ref_YxyToXYZ
+  SwiftName: yxyToXYZ(_:)
+- Name: nc_ref_ColorSpaceEqual
+  SwiftName: colorSpacesEqual(_:_:)
+  Nullability: [N, N]
+- Name: nc_ref_GetColorSpaceDescriptor
+  SwiftName: getColorSpaceDescriptor(_:_:)
+  Nullability: [N, N]
+- Name: nc_ref_GetColorSpaceM33Descriptor
+  SwiftName: getColorSpaceM33Descriptor(_:_:)
+  Nullability: [N, N]
+- Name: nc_ref_GetDescription
+  SwiftName: colorSpaceDescription(_:)
+  Nullability: [N]
+  NullabilityOfRet: O
+- Name: nc_ref_GetK0Phi
+  SwiftName: getK0Phi(_:_:_:)
+  Nullability: [N, N, N]
+- Name: nc_ref_MatchLinearColorSpace
+  SwiftName: matchLinearColorSpace(red:green:blue:white:epsilon:)
+  NullabilityOfRet: O
+- Name: nc_ref_KelvinToYxy
+  SwiftName: kelvinToYxy(temperature:luminosity:)
+- Name: nc_ref_ISO17321ColorChipsNames
+  SwiftName: iso17321ColorChipsNames()
+  NullabilityOfRet: N
+- Name: nc_ref_ISO17321ColorChipsAP0
+  SwiftName: iso17321ColorChipsAP0()
+  NullabilityOfRet: N
+- Name: nc_ref_CheckerColorChipsSRGB
+  SwiftName: checkerColorChipsSRGB()
+  NullabilityOfRet: N
+- Name: nc_ref_McCamy1976ColorChipsYxy
+  SwiftName: mcCamy1976ColorChipsYxy()
+  NullabilityOfRet: N
+- Name: nc_ref_ProjectToChromaticities
+  SwiftName: projectToChromaticities(_:)
