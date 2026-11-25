@@ -1,6 +1,0 @@
-module Nanocolor {
-    header "../nanocolor.h"
-    header "../nanocolorProcessing.h"
-    header "../nanocolorUtils.h"
-    export *
-}
