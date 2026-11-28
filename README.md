@@ -42,7 +42,7 @@ calculations between software packages and studios challenging.
 MaterialX takes an interesting perspective; it names a bakers'
 dozen of color spaces and defines them as OpenEXR does, and
 also introduces a notion of being able to remove an input transform
-from a color in order to accomodate image formats commonly used
+from a color in order to accommodate image formats commonly used
 as texture sources for shader graphs.
 
 Nanocolor follows this idea, and also introduces that all the
